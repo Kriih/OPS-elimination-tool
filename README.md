@@ -1,4 +1,5 @@
 # OPS Elimination Tool
+https://github.com/Kriih/OPS-elimination-tool/settings/pages
 
 Interfaz en React para el "Elimination Tool" del sistema Objective Personality (OPS): una serie de toggles binarios que van descartando columnas de la grilla de 128 tipos hasta llegar a un código de tipo concreto.
 
