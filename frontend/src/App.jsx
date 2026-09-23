@@ -7,10 +7,13 @@ import {
   TOTEMS,
   isIntrovertHeader,
   formatHeaderCode,
+  mbtiTypeFromCell,
+  parsePastedCode,
+  selectionsFromCell,
 } from "./typeGrid";
-import { CHECKLIST_SECTIONS, checklistItemChecked } from "./checklistData";
+import { CHECKLIST_SECTIONS, checklistItemChecked, findChecklistItem } from "./checklistData";
 
-const NAV_TABS = ["Checklist", "Emoji"];
+const NAV_TABS = ["Checklist", "Traits", "Interpretation", "Emoji"];
 
 const PAIRS = [
   {
@@ -88,6 +91,7 @@ export default function App() {
   const [selections, setSelections] = useState(Array(PAIRS.length).fill(null));
   const [extraSelections, setExtraSelections] = useState(Array(EXTRA_PAIRS.length).fill(null));
   const [activeTab, setActiveTab] = useState(null);
+  const [pasteValue, setPasteValue] = useState("");
 
   function setSelection(index, side) {
     setSelections((prev) =>
@@ -131,18 +135,27 @@ export default function App() {
     )
     .join("");
 
+  const resolvedHeader = survivorCount === 1 ? GRID_HEADERS[survivor.col] : null;
+  const totem = resolvedHeader ? TOTEMS[resolvedHeader] : null;
+  const saviorFunctions = survivorCount === 1 ? survivor.cell.text.split("/") : null;
+  const mbti =
+    survivorCount === 1 ? mbtiTypeFromCell(survivor.cell, isIntrovertHeader(resolvedHeader)) : null;
+
   const typeCode =
     survivorCount === 0
       ? "(sin coincidencia)"
       : survivorCount > 1
       ? "(ambiguo)"
-      : `${survivor.cell.text}-${formatHeaderCode(GRID_HEADERS[survivor.col])}`;
+      : `${survivor.cell.text}-${formatHeaderCode(resolvedHeader)}`;
 
-  const fullCode = `${extraCode}-${typeCode}`;
+  const fullCode = `${mbti ? mbti + " " : ""}${extraCode}-${typeCode}`;
 
-  const resolvedHeader = survivorCount === 1 ? GRID_HEADERS[survivor.col] : null;
-  const totem = resolvedHeader ? TOTEMS[resolvedHeader] : null;
-  const saviorFunctions = survivorCount === 1 ? survivor.cell.text.split("/") : null;
+  const checklistCtx = { selections, extraSelections, saviorFunctions };
+  const checkedItems = CHECKLIST_SECTIONS.flatMap((section) =>
+    section.items
+      .filter((item) => checklistItemChecked(item.test, checklistCtx))
+      .map((item) => ({ section: section.title, item }))
+  );
 
   const binaryLength = EXTRA_PAIRS.length + PAIRS.length;
 
@@ -150,8 +163,7 @@ export default function App() {
     extraSelections.map((side) => (side === "right" ? "1" : side === "left" ? "0" : "X")).join("") +
     selections.map((side) => (side === "right" ? "1" : side === "left" ? "0" : "X")).join("");
 
-  function handleBinaryChange(e) {
-    const raw = e.target.value.replace(/[^01xX]/g, "").slice(0, binaryLength);
+  function applyBinaryString(raw) {
     const extraRaw = raw.slice(0, EXTRA_PAIRS.length);
     const mainRaw = raw.slice(EXTRA_PAIRS.length);
 
@@ -175,6 +187,52 @@ export default function App() {
     );
   }
 
+  function handleBinaryChange(e) {
+    const input = e.target;
+    const cursor = input.selectionStart;
+    const before = input.value.length;
+    const raw = input.value.replace(/[^01xX]/g, "").slice(0, binaryLength);
+    applyBinaryString(raw);
+
+    // The field's value is always re-derived from state (it can normalize
+    // stray characters), which would otherwise throw the caret to the end
+    // after every keystroke. Put it back where the user was typing.
+    requestAnimationFrame(() => {
+      if (document.activeElement === input) {
+        const shrink = before - input.value.length;
+        const pos = Math.max(0, cursor - Math.max(shrink, 0));
+        input.setSelectionRange(pos, pos);
+      }
+    });
+  }
+
+  function handlePasteCode(e) {
+    const value = e.target.value;
+    setPasteValue(value);
+
+    // Looks like a (possibly partial) binary string, e.g "010X1..." or
+    // "FM010010111" - apply it the same way the binary field does.
+    const stripped = value.replace(/[\s-]/g, "");
+    if (stripped.length > 0 && /^[01xX]+$/.test(stripped)) {
+      applyBinaryString(stripped.slice(0, binaryLength));
+      return;
+    }
+
+    const parsed = parsePastedCode(value);
+    if (parsed.selections) {
+      setSelections((prev) => prev.map((old, i) => (parsed.selections[i] === undefined ? old : parsed.selections[i])));
+    }
+    if (parsed.extraSelections) {
+      setExtraSelections((prev) =>
+        prev.map((old, i) => (parsed.extraSelections[i] === undefined ? old : parsed.extraSelections[i]))
+      );
+    }
+  }
+
+  function handleGridCellClick(cell, colIndex) {
+    setSelections(selectionsFromCell(cell, GRID_HEADERS[colIndex]));
+  }
+
   return (
     <div className="page">
       <h1 className="title">Elimination Tool</h1>
@@ -196,7 +254,6 @@ export default function App() {
                 >
                   {pair.left}
                 </button>
-                <span className="time">{pair.time}</span>
                 <button
                   className={`opt ${state === "right" ? "active" : ""}`}
                   onClick={() => setSelection(i, "right")}
@@ -262,11 +319,18 @@ export default function App() {
           <tbody>
             {GRID_ROWS.map((cells, r) => (
               <tr key={r}>
-                {cells.map((cell, c) => (
-                  <td key={c} className={isFaded(cell, c) ? "faded" : ""}>
-                    {cell.text}
-                  </td>
-                ))}
+                {cells.map((cell, c) => {
+                  const isSelected = survivorCount === 1 && survivor.cell === cell && survivor.col === c;
+                  return (
+                    <td
+                      key={c}
+                      className={`${isFaded(cell, c) ? "faded" : ""} ${isSelected ? "selected" : ""}`}
+                      onClick={() => handleGridCellClick(cell, c)}
+                    >
+                      {cell.text}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -291,6 +355,13 @@ export default function App() {
           value={binary}
           onChange={handleBinaryChange}
         />
+        <input
+          className="result-paste"
+          type="text"
+          placeholder="Pegar código o binario (ej: Ti/Ne-CS/B(P) o 010010111)"
+          value={pasteValue}
+          onChange={handlePasteCode}
+        />
       </div>
 
       <div className="navbar">
@@ -311,11 +382,7 @@ export default function App() {
             <div className="checklist-section" key={section.title}>
               <h3 className="checklist-section-title">{section.title}</h3>
               {section.items.map((item, i) => {
-                const checked = checklistItemChecked(item.test, {
-                  selections,
-                  extraSelections,
-                  saviorFunctions,
-                });
+                const checked = checklistItemChecked(item.test, checklistCtx);
                 return (
                   <div className="checklist-item" key={i}>
                     <span className={`check ${checked ? "checked" : ""}`}>{checked ? "✓" : "—"}</span>
@@ -336,6 +403,55 @@ export default function App() {
               })}
             </div>
           ))}
+        </div>
+      )}
+
+      {activeTab === "Traits" && (
+        <div className="tab-panel checklist">
+          {checkedItems.length === 0 && <div className="checklist-empty">Todavía no hay coins marcadas.</div>}
+          {checkedItems.map(({ section, item }, i) => (
+            <div className="checklist-item" key={i}>
+              <span className="check checked">✓</span>
+              <div className="checklist-body">
+                <div className="checklist-heading">
+                  <span className="checklist-section-inline">{section}</span>
+                  <span className="checklist-title">{item.title}</span>
+                  {item.subtitle && <span className="checklist-subtitle">{item.subtitle}</span>}
+                  {item.tag && <span className="checklist-tag">{item.tag}</span>}
+                </div>
+                {item.lines.map((line, li) => (
+                  <div className="checklist-line" key={li}>
+                    {line}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === "Interpretation" && (
+        <div className="tab-panel checklist">
+          {checkedItems.length === 0 && <div className="checklist-empty">Todavía no hay coins marcadas.</div>}
+          {checkedItems.map(({ section, item }, i) => {
+            const opp = item.opposite ? findChecklistItem(item.opposite) : null;
+            return (
+              <div className="interpretation-item" key={i}>
+                <div className="checklist-heading">
+                  <span className="checklist-section-inline">{section}</span>
+                  <span className="checklist-title">{item.title}</span>
+                </div>
+                <p className="interpretation-text">
+                  {item.interpretation} <em>Por ejemplo: {item.example}</em>
+                </p>
+                {opp && (
+                  <p className="interpretation-counter">
+                    <strong>Contraejemplo — {opp.title}:</strong> {opp.interpretation} <em>Por ejemplo: {opp.example}</em>
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

@@ -165,3 +165,117 @@ export function isIntrovertHeader(header) {
 export function formatHeaderCode(header) {
   return `${header.slice(0, -1)}(${header.slice(-1)})`;
 }
+
+// Derives the 4-letter MBTI-style code from a grid cell + its overall I/E.
+//
+// N/S and T/F just come from the two function letters. J/P comes from the
+// cell's PRIMARY axis (the one that decides Decider-vs-Observer): Oi->J,
+// Oe->P, Di->P, De->J - this is exactly the ExxP/IxxJ/ExxJ/IxxP rule from
+// the source site's own grid legend, and it's the only rule that also
+// works for the "same-attitude" Sleep/Play pairs (where classic MBTI's
+// "extraverted function decides J/P" shortcut has no extraverted function
+// to point at). I/E is NOT re-derived from the pair's own attitudes -
+// OPS's overall Introvert/Extrovert is a property of the full animal
+// ranking (isIntrovertHeader), independent of which 2 functions are shown.
+export function mbtiTypeFromCell(cell, isIntrovert) {
+  const { classes, text } = cell;
+  const isDecider = classes.includes("decider");
+  const jp = isDecider ? (classes.includes("di") ? "P" : "J") : classes.includes("oi") ? "J" : "P";
+  const [a, b] = text.split("/");
+  const ns = [a, b].find((f) => f[0] === "N" || f[0] === "S")[0];
+  const ft = [a, b].find((f) => f[0] === "F" || f[0] === "T")[0];
+  return `${isIntrovert ? "I" : "E"}${ns}${ft}${jp}`;
+}
+
+// Given one grid cell (and the header of the column it's in), derive the
+// full set of 9 Elimination Tool answers it implies. Used both by clicking
+// a cell directly and by parsePastedCode below.
+export function selectionsFromCell(cell, header) {
+  const cls = cell.classes;
+  const selections = new Array(9).fill(undefined);
+  selections[0] = cls.includes("observer") ? "left" : "right";
+  selections[1] = cls.includes("de") || cls.includes("de2") ? "right" : cls.includes("di") || cls.includes("di2") ? "left" : undefined;
+  selections[2] = cls.includes("oe") || cls.includes("oe2") ? "right" : cls.includes("oi") || cls.includes("oi2") ? "left" : undefined;
+  selections[3] = cls.includes("n") ? "left" : "right";
+  selections[4] = cls.includes("f") ? "left" : "right";
+  selections[5] = cls.includes("cs") || cls.includes("sb") ? "left" : "right";
+  selections[6] = cls.includes("cs") || cls.includes("cp") ? "left" : "right";
+  selections[7] = cls.includes("e4") ? "left" : cls.includes("i4") ? "right" : undefined;
+  if (header) {
+    selections[8] = isIntrovertHeader(header) ? "left" : "right";
+  }
+  return selections;
+}
+
+// Reverse-lookup: given a pasted code fragment (any mix of an MBTI code, an
+// "FM"-style modality prefix, a function pair like "Ti/Ne" and/or a header
+// like "CS/BP" or "CS/B(P)"), find the matching grid cell and derive every
+// Elimination Tool answer it implies. Returns as much as it can parse;
+// fields that can't be determined are left undefined.
+export function parsePastedCode(input) {
+  const raw = (input || "").trim();
+  const noParens = raw.replace(/[()]/g, "");
+  const upper = noParens.toUpperCase();
+
+  let header = null;
+  let col = -1;
+  for (let i = 0; i < GRID_HEADERS.length; i++) {
+    if (upper.includes(GRID_HEADERS[i])) {
+      header = GRID_HEADERS[i];
+      col = i;
+      break;
+    }
+  }
+
+  const fnMatch = raw.match(/([A-Z][ie])\s*\/\s*([A-Z][ie])/);
+  const functionPair = fnMatch ? `${fnMatch[1]}/${fnMatch[2]}` : null;
+
+  const modalityMatch = raw.match(/\b([FM]{2})\b(?=-)/);
+  const modality = modalityMatch ? modalityMatch[1] : null;
+
+  let cell = null;
+  let cellCol = col;
+  if (functionPair) {
+    outer: for (let r = 0; r < GRID_ROWS.length; r++) {
+      for (let c = 0; c < GRID_HEADERS.length; c++) {
+        if (GRID_ROWS[r][c].text === functionPair && (col === -1 || c === col)) {
+          cell = GRID_ROWS[r][c];
+          cellCol = c;
+          break outer;
+        }
+      }
+    }
+    if (!cell) {
+      // Function pair given but not at the matched column (or no header
+      // given at all) - fall back to the first column where it appears.
+      outer2: for (let r = 0; r < GRID_ROWS.length; r++) {
+        for (let c = 0; c < GRID_HEADERS.length; c++) {
+          if (GRID_ROWS[r][c].text === functionPair) {
+            cell = GRID_ROWS[r][c];
+            cellCol = c;
+            break outer2;
+          }
+        }
+      }
+    }
+  }
+
+  const result = {};
+  if (modality) {
+    result.extraSelections = [modality[0] === "F" ? "left" : "right", modality[1] === "F" ? "left" : "right"];
+  }
+
+  if (cell) {
+    result.selections = selectionsFromCell(cell, header || GRID_HEADERS[cellCol]);
+  } else if (header) {
+    // Only the header was found: we can still resolve S/P, C/B and I/E.
+    const selections = new Array(9).fill(undefined);
+    const lead = header.slice(0, 2);
+    selections[5] = lead.includes("S") ? "left" : "right";
+    selections[6] = lead.includes("C") ? "left" : "right";
+    selections[8] = isIntrovertHeader(header) ? "left" : "right";
+    result.selections = selections;
+  }
+
+  return result;
+}
