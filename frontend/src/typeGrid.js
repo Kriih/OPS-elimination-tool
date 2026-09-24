@@ -9,26 +9,36 @@ export const GRID_HEADERS = [
   "PC/SB", "PC/BS", "PB/SC", "PB/CS",
 ];
 
-// Animal totem + emoji per 16-column animal stack, ported from
-// subjectivepersonality.com's OPS Type Analyzer (its "Emoji" tab).
+// Animal totem + emoji + score per 16-column animal stack, ported from
+// subjectivepersonality.com's OPS Type Analyzer (its "Emoji" tab bundle,
+// the `new Xt(stack, score, name, emojiShortName)` totem table). The score
+// runs -7..+7 across all 16 animals - keep it as a string, "-0" and "+0"
+// are two distinct entries (Hares and Raccoons), not the same value.
 export const TOTEMS = {
-  "SC/BP": { name: "Owls", emoji: "🦉" },
-  "SC/PB": { name: "Hedgehogs", emoji: "🦔" },
-  "SB/CP": { name: "Rhinos", emoji: "🦏" },
-  "SB/PC": { name: "Beavers", emoji: "🦫" },
-  "CS/BP": { name: "Turtles", emoji: "🐢" },
-  "CS/PB": { name: "Pandas", emoji: "🐼" },
-  "CP/SB": { name: "Hares", emoji: "🐰" },
-  "CP/BS": { name: "Zebras", emoji: "🦓" },
-  "BS/CP": { name: "Deer", emoji: "🦌" },
-  "BS/PC": { name: "Raccoons", emoji: "🦝" },
-  "BP/SC": { name: "Otters", emoji: "🦦" },
-  "BP/CS": { name: "Kangaroos", emoji: "🦘" },
-  "PC/SB": { name: "Tigers", emoji: "🐯" },
-  "PC/BS": { name: "Foxes", emoji: "🦊" },
-  "PB/SC": { name: "Seals", emoji: "🦭" },
-  "PB/CS": { name: "Dolphins", emoji: "🐬" },
+  "SC/BP": { name: "Owls", emoji: "🦉", score: "-7" },
+  "SC/PB": { name: "Hedgehogs", emoji: "🦔", score: "-5" },
+  "SB/CP": { name: "Rhinos", emoji: "🦏", score: "-2" },
+  "SB/PC": { name: "Beavers", emoji: "🦫", score: "+1" },
+  "CS/BP": { name: "Turtles", emoji: "🐢", score: "-6" },
+  "CS/PB": { name: "Pandas", emoji: "🐼", score: "-4" },
+  "CP/SB": { name: "Hares", emoji: "🐰", score: "-0" },
+  "CP/BS": { name: "Zebras", emoji: "🦓", score: "+3" },
+  "BS/CP": { name: "Deer", emoji: "🦌", score: "-3" },
+  "BS/PC": { name: "Raccoons", emoji: "🦝", score: "+0" },
+  "BP/SC": { name: "Otters", emoji: "🦦", score: "+4" },
+  "BP/CS": { name: "Kangaroos", emoji: "🦘", score: "+6" },
+  "PC/SB": { name: "Tigers", emoji: "🐯", score: "-1" },
+  "PC/BS": { name: "Foxes", emoji: "🦊", score: "+2" },
+  "PB/SC": { name: "Seals", emoji: "🦭", score: "+5" },
+  "PB/CS": { name: "Dolphins", emoji: "🐬", score: "+7" },
 };
+
+// Same 16 totems as a list, ordered by their score from -7 to +7 (matching
+// the reference site's own totem-spectrum order), for rendering the full
+// "all animals" view.
+export const TOTEMS_ORDERED = Object.entries(TOTEMS)
+  .map(([header, totem]) => ({ header, ...totem }))
+  .sort((a, b) => parseInt(a.score, 10) - parseInt(b.score, 10) || (a.score.startsWith("-") ? -1 : 1));
 
 function row(cells) {
   return cells.map(([text, classes]) => ({ text, classes: classes.split(" ") }));

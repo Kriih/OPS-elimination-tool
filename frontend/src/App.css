@@ -141,6 +141,36 @@ body {
   gap: 8px;
 }
 
+.result-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copy-btn {
+  position: absolute;
+  left: 100%;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--muted);
+  opacity: 0.45;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
 .result-code {
   font-family: var(--mono);
   font-size: 1.05rem;
@@ -393,6 +423,137 @@ body {
 .emoji-placeholder {
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+.emoji-score {
+  color: var(--accent-bright);
+  font-weight: 700;
+}
+
+.totem-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.totem-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.totem-emoji {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.totem-score {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.totem-name {
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.totem-cell.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.totem-cell.selected .totem-score,
+.totem-cell.selected .totem-name {
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .totem-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.totem-curve {
+  width: 100%;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+}
+
+.totem-curve-caption {
+  font-size: 0.66rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.totem-curve-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.curve-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.curve-area {
+  fill: var(--accent-soft);
+  stroke: none;
+}
+
+.curve-line {
+  fill: none;
+  stroke: var(--accent-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.curve-stem {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.curve-marker {
+  fill: var(--bg);
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+
+.curve-point.selected .curve-marker {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.curve-point.selected .curve-stem {
+  stroke: var(--accent);
+}
+
+.curve-emoji {
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.curve-score {
+  font-size: 8px;
+  font-family: var(--mono);
+  fill: var(--muted);
+}
+
+.curve-point.selected .curve-score {
+  fill: var(--accent-bright);
+  font-weight: 700;
 }
 
 .grid-scroll {

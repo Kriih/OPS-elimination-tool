@@ -5,6 +5,7 @@ import {
   GRID_LEGEND,
   FADE_RULES,
   TOTEMS,
+  TOTEMS_ORDERED,
   isIntrovertHeader,
   formatHeaderCode,
   mbtiTypeFromCell,
@@ -87,11 +88,58 @@ const EXTRA_PAIRS = [
   { left: "cat", leftCode: "F", right: "dog", rightCode: "M" },
 ];
 
+// Bell-curve chart (Emoji tab): places each of the 16 totems along a normal
+// distribution using their own score (-7..+7) as the x position. "-0" and
+// "+0" share the numeric value 0, so they're nudged to -0.5/+0.5 to keep
+// their markers from overlapping at the curve's peak.
+const CURVE_WIDTH = 600;
+const CURVE_HEIGHT = 220;
+const CURVE_PAD_X = 32;
+const CURVE_TOP = 34;
+const CURVE_BASELINE = 172;
+const CURVE_SIGMA = 4;
+
+function totemScoreX(score) {
+  if (score === "-0") return -0.5;
+  if (score === "+0") return 0.5;
+  return parseInt(score, 10);
+}
+
+function gaussian(x) {
+  return Math.exp(-(x * x) / (2 * CURVE_SIGMA * CURVE_SIGMA));
+}
+
+function curveScaleX(x) {
+  return CURVE_PAD_X + ((x + 7.5) / 15) * (CURVE_WIDTH - 2 * CURVE_PAD_X);
+}
+
+function curveScaleY(v) {
+  return CURVE_BASELINE - v * (CURVE_BASELINE - CURVE_TOP);
+}
+
+const CURVE_LINE_D = (() => {
+  const points = [];
+  for (let x = -7.5; x <= 7.5 + 1e-9; x += 0.25) {
+    points.push(`${curveScaleX(x)},${curveScaleY(gaussian(x))}`);
+  }
+  return `M${points.join(" L")}`;
+})();
+
+const CURVE_AREA_D = `${CURVE_LINE_D} L${curveScaleX(7.5)},${CURVE_BASELINE} L${curveScaleX(-7.5)},${CURVE_BASELINE} Z`;
+
 export default function App() {
   const [selections, setSelections] = useState(Array(PAIRS.length).fill(null));
   const [extraSelections, setExtraSelections] = useState(Array(EXTRA_PAIRS.length).fill(null));
   const [activeTab, setActiveTab] = useState(null);
   const [pasteValue, setPasteValue] = useState("");
+  const [copiedField, setCopiedField] = useState(null);
+
+  function handleCopy(text, field) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField((f) => (f === field ? null : f)), 1200);
+    });
+  }
 
   function setSelection(index, side) {
     setSelections((prev) =>
@@ -117,16 +165,31 @@ export default function App() {
     });
   }
 
-  let survivor = null;
-  let survivorCount = 0;
+  const survivors = [];
   for (let r = 0; r < GRID_ROWS.length; r++) {
     for (let c = 0; c < GRID_HEADERS.length; c++) {
       const cell = GRID_ROWS[r][c];
       if (!isFaded(cell, c)) {
-        survivorCount += 1;
-        if (!survivor) survivor = { cell, col: c };
+        survivors.push({ cell, col: c });
       }
     }
+  }
+  const survivor = survivors[0] || null;
+  const survivorCount = survivors.length;
+
+  // Merges every surviving candidate's "Fi/Ne-CS/B(P)" string position by
+  // position: a letter that agrees across all of them is kept, one that
+  // doesn't (still-undetermined coin) becomes "_". The "-", "/", "(", ")"
+  // separators always agree since the format is fixed-width, so they pass
+  // through untouched.
+  function mergeAmbiguousCode(candidates) {
+    const strings = candidates.map(
+      ({ cell, col }) => `${cell.text}-${formatHeaderCode(GRID_HEADERS[col])}`
+    );
+    return strings[0]
+      .split("")
+      .map((ch, i) => (strings.every((s) => s[i] === ch) ? ch : "_"))
+      .join("");
   }
 
   const extraCode = extraSelections
@@ -145,7 +208,7 @@ export default function App() {
     survivorCount === 0
       ? "(sin coincidencia)"
       : survivorCount > 1
-      ? "(ambiguo)"
+      ? mergeAmbiguousCode(survivors)
       : `${survivor.cell.text}-${formatHeaderCode(resolvedHeader)}`;
 
   const fullCode = `${mbti ? mbti + " " : ""}${extraCode}-${typeCode}`;
@@ -346,15 +409,37 @@ export default function App() {
       </div>
 
       <div className="result">
-        <div className="result-code">{fullCode}</div>
-        <input
-          className="result-binary"
-          type="text"
-          inputMode="numeric"
-          maxLength={binaryLength}
-          value={binary}
-          onChange={handleBinaryChange}
-        />
+        <div className="result-row">
+          <div className="result-code">{fullCode}</div>
+          <button
+            type="button"
+            className="copy-btn"
+            onClick={() => handleCopy(fullCode, "code")}
+            aria-label="Copiar código"
+            title="Copiar código"
+          >
+            {copiedField === "code" ? "✓" : "⧉"}
+          </button>
+        </div>
+        <div className="result-row">
+          <input
+            className="result-binary"
+            type="text"
+            inputMode="numeric"
+            maxLength={binaryLength}
+            value={binary}
+            onChange={handleBinaryChange}
+          />
+          <button
+            type="button"
+            className="copy-btn"
+            onClick={() => handleCopy(binary, "binary")}
+            aria-label="Copiar binario"
+            title="Copiar binario"
+          >
+            {copiedField === "binary" ? "✓" : "⧉"}
+          </button>
+        </div>
         <input
           className="result-paste"
           type="text"
@@ -460,7 +545,9 @@ export default function App() {
           {totem ? (
             <>
               <div className="emoji-big">{totem.emoji}</div>
-              <div className="emoji-name">{totem.name}</div>
+              <div className="emoji-name">
+                {totem.name} <span className="emoji-score">{totem.score}</span>
+              </div>
             </>
           ) : (
             <div className="emoji-placeholder">
@@ -470,6 +557,55 @@ export default function App() {
                 : "Definí más coins para determinar el animal"}
             </div>
           )}
+
+          <div className="totem-grid">
+            {TOTEMS_ORDERED.map((t) => (
+              <div key={t.header} className={`totem-cell ${t.header === resolvedHeader ? "selected" : ""}`}>
+                <span className="totem-emoji">{t.emoji}</span>
+                <span className="totem-score">{t.score}</span>
+                <span className="totem-name">{t.name}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="totem-curve">
+            <div className="totem-curve-caption">
+              Distribución normal — eje: puntaje del animal, altura: frecuencia
+            </div>
+            <svg
+              className="totem-curve-svg"
+              viewBox={`0 0 ${CURVE_WIDTH} ${CURVE_HEIGHT}`}
+              role="img"
+              aria-label="Animales distribuidos según su puntaje en una curva normal"
+            >
+              <line
+                x1={CURVE_PAD_X}
+                y1={CURVE_BASELINE}
+                x2={CURVE_WIDTH - CURVE_PAD_X}
+                y2={CURVE_BASELINE}
+                className="curve-axis"
+              />
+              <path d={CURVE_AREA_D} className="curve-area" />
+              <path d={CURVE_LINE_D} className="curve-line" />
+              {TOTEMS_ORDERED.map((t) => {
+                const x = curveScaleX(totemScoreX(t.score));
+                const y = curveScaleY(gaussian(totemScoreX(t.score)));
+                const selected = t.header === resolvedHeader;
+                return (
+                  <g key={t.header} className={`curve-point ${selected ? "selected" : ""}`}>
+                    <line x1={x} y1={y} x2={x} y2={CURVE_BASELINE} className="curve-stem" />
+                    <circle cx={x} cy={y} r={selected ? 13 : 10} className="curve-marker" />
+                    <text x={x} y={y + 4} textAnchor="middle" className="curve-emoji">
+                      {t.emoji}
+                    </text>
+                    <text x={x} y={CURVE_BASELINE + 16} textAnchor="middle" className="curve-score">
+                      {t.score}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
         </div>
       )}
     </div>
