@@ -95,7 +95,13 @@ dentro de un sandbox sin Node (había que usar `/app/bin/host-spawn`).
   invisibles, caja para pegar un código o binario, y la barra de tabs
   (`NAV_TABS`: Checklist, Traits, Interpretation, Reading, Emoji). Debajo de los
   toggles hay un botón **Reset** que deja todos los toggles en `null` y
-  vacía la caja de pegar. El tab Emoji
+  vacía la caja de pegar. El **binario es editable con posiciones
+  fijas** (`editBinary` en `typeCode.js`): borrar deja `X` sin correr los
+  demás dígitos y escribir/pegar sobrescribe desde el cursor; el campo no
+  tiene `maxLength` a propósito (si no, no se podría sobrescribir). La
+  **caja de pegar** decide con `readPaste` (`typeCode.js`); si el texto
+  tiene forma de código completo pero el tipo no existe, no toca los
+  toggles y muestra el motivo debajo (`! ...`, en `--accent-bright`). El tab Emoji
   incluye una curva normal en SVG que ubica los 16 animales-totem según
   su puntaje (-7..+7; `-0` y `+0` se corren a ±0.5 para no superponerse).
 - **`TotemCurve.jsx`** — esa curva como componente, compartido por Emoji y
@@ -135,8 +141,12 @@ dentro de un sandbox sin Node (había que usar `/app/bin/host-spawn`).
   que no coincide; al final busca la celda en `GRID_ROWS`), `toShort`,
   `toLong`, `toSelections` (estado de toggles de la app) y
   `selectionsToBinary` (el binario que muestra la app). La caja de pegar
-  prueba primero `parse` + `validate` y, si no pasa, sigue con
+  usa `readPaste`: binario (aunque sea parcial) → se aplica; texto que
+  calza con `SHORT_CODE`/`LONG_CODE` → `parse` + `validate`, y si da
+  motivos se muestran sin tocar los toggles (**nunca** pasa al parser
+  tolerante, que cargaba otro tipo); cualquier otra cosa →
   `parsePastedCode` (tolerante: parciales, `_`, headers sueltos).
+  `editBinary` aplica una edición del campo binario con posiciones fijas.
 - **`typeCode.test.js`** — tests con Vitest (`npm test` en `frontend/`):
   caso base, las 512 combinaciones de la grilla (ida y vuelta corta↔larga,
   MBTI, y que `toSelections` coincida con el clic en la grilla), códigos

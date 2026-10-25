@@ -12,7 +12,7 @@
 // Modality order is [Sensory M/F][De M/F]: "MF" = Masculine Sensory +
 // Feminine extraverted Decider (see contexto.md).
 
-import { GRID_HEADERS, GRID_ROWS, mbtiTypeFromCell } from "./typeGrid.js";
+import { GRID_HEADERS, GRID_ROWS, mbtiTypeFromCell, parsePastedCode } from "./typeGrid.js";
 
 export const SHORT_CODE =
   /^(?:(?<mbti>[IE][NS][FT][JP])\s+)?(?<m1>[FM])(?<m2>[FM])-(?<sav1>[NSFT][ie])\/(?<sav2>[NSFT][ie])-(?<a1>[SPCB])(?<a2>[SPCB])\/(?<a3>[SPCB])\((?<a4>[SPCB])\)(?:\s*#(?<social>[1-4]))?$/;
@@ -252,4 +252,59 @@ export function selectionsToBinary(extraSelections, selections) {
   return [...extraSelections, ...selections]
     .map((side) => (side === "right" ? "1" : side === "left" ? "0" : "X"))
     .join("");
+}
+
+// What the paste box does with its text. Returns one of:
+//   { binary: "1001" }                 (possibly partial) binary string
+//   { selections, extraSelections }    complete valid code: every toggle
+//   { errors: [...] }                  complete-looking code for a type that
+//                                      doesn't exist: leave the toggles alone
+//   { partial: {...} }                 anything else, via parsePastedCode
+// "Complete-looking" means SHORT_CODE or LONG_CODE matches: those must
+// never reach the lenient parser, which would load some other type.
+export function readPaste(text, binaryLength = 11) {
+  const raw = (text || "").trim();
+
+  // e.g "010X1..." or "FM010010111" - applied the same way the binary field does.
+  const stripped = raw.replace(/[\s-]/g, "");
+  if (stripped.length > 0 && /^[01xX]+$/.test(stripped)) {
+    return { binary: stripped.slice(0, binaryLength) };
+  }
+
+  if (SHORT_CODE.test(raw) || LONG_CODE.test(raw)) {
+    const result = parse(raw);
+    const errors = result.ok ? validate(result.value) : result.errors;
+    return errors.length ? { errors } : toSelections(result.value);
+  }
+
+  return { partial: parsePastedCode(raw) };
+}
+
+// One edit of the binary field, where every position is fixed: deleting
+// leaves "X" instead of shifting the rest, and typing or pasting overwrites
+// from the caret. `prev` is the field's value before the edit, `next` what
+// the browser left in it and `caret` its selectionEnd afterwards; inputType
+// is the InputEvent's. Returns the new value and where to put the caret.
+export function editBinary(prev, next, caret, inputType = "") {
+  // The browser's edit is prev = head + removed + tail and
+  // next = head + inserted + tail, with the inserted text ending at the
+  // caret. The tail is what follows the caret; the head is whatever the
+  // two still share before it (if it eats into the inserted text, those
+  // characters equal the ones they overwrite, so the result is the same).
+  const tailLength = Math.min(next.length - caret, prev.length);
+  const removedEnd = prev.length - tailLength;
+  const before = next.slice(0, caret);
+  let head = 0;
+  while (head < removedEnd && head < before.length && before[head] === prev[head]) head++;
+
+  const inserted = before.slice(head).replace(/[^01xX]/g, "").toUpperCase();
+  const out = prev.split("");
+  for (let i = head; i < removedEnd; i++) out[i] = "X";
+  for (let i = 0; i < inserted.length && head + i < out.length; i++) out[head + i] = inserted[i];
+
+  let pos = Math.min(head + inserted.length, out.length);
+  // Supr on a single character steps over the "X" it leaves, so pressing
+  // it again clears the next one, as it would in a normal field.
+  if (inputType === "deleteContentForward" && removedEnd - head === 1) pos = removedEnd;
+  return { value: out.join(""), caret: pos };
 }

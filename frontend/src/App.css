@@ -249,6 +249,19 @@ body {
   border-color: var(--accent);
 }
 
+.paste-error {
+  margin: 0;
+  max-width: 90vw;
+  font-size: 0.72rem;
+  color: var(--accent-bright);
+  text-align: center;
+}
+
+/* Stays rendered (and announced) when empty, but without .result's gap. */
+.paste-error:empty {
+  margin-top: -8px;
+}
+
 .navbar {
   display: flex;
   flex-wrap: wrap;

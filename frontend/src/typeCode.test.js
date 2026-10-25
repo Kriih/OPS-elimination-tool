@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { GRID_HEADERS, GRID_ROWS, formatHeaderCode, mbtiTypeFromCell, selectionsFromCell } from "./typeGrid.js";
-import { animalOf, parse, selectionsToBinary, stackOf, toLong, toSelections, toShort, validate } from "./typeCode.js";
+import {
+  animalOf,
+  editBinary,
+  parse,
+  readPaste,
+  selectionsToBinary,
+  stackOf,
+  toLong,
+  toSelections,
+  toShort,
+  validate,
+} from "./typeCode.js";
 
 const BASE_SHORT = "MF-Ni/Fe-BP/C(S)";
 const BASE_LONG = "O/De/Oi/N/F/P/B/INFO/E/M-S/F-De";
@@ -142,5 +153,97 @@ describe("stack de funciones", () => {
         expect(animalOf(observer, decider), cell.text).toBe(GRID_HEADERS[col][0]);
       });
     }
+  });
+});
+
+describe("caja de pegar", () => {
+  it.each([BASE_SHORT, BASE_LONG, `INFJ ${BASE_SHORT}`, `  ${BASE_SHORT}  `])("%j carga el caso base", (code) => {
+    const { selections, extraSelections, errors } = readPaste(code);
+    expect(errors).toBeUndefined();
+    expect(selectionsToBinary(extraSelections, selections)).toBe(BASE_BINARY);
+  });
+
+  it.each([
+    ["MF-Ni/Fe-BB/C(S)", "se repite B"],
+    ["MF-Ni/Fe-BP/C(P)", "se repite P"],
+    ["ENFJ MF-Ni/Fe-BP/C(S)", "El MBTI de Ni/Fe es INFJ, no ENFJ"],
+    ["MF-Ni/Ne-BP/C(S)", "son dos Observer"],
+    ["O/De/Oi/N/F/S/C/INFO/E/M-S/F-De", "no incluyen a Blast"],
+  ])("%j no toca los toggles y da el motivo", (code, message) => {
+    const result = readPaste(code);
+    expect(result.selections).toBeUndefined();
+    expect(result.extraSelections).toBeUndefined();
+    expect(result.partial).toBeUndefined();
+    expect(result.binary).toBeUndefined();
+    expect(result.errors.join(" ")).toContain(message);
+  });
+
+  it("un código parcial sigue yendo al parser tolerante", () => {
+    const { partial, errors } = readPaste("Ti/Ne-CS/B(P)");
+    expect(errors).toBeUndefined();
+    const col = GRID_HEADERS.indexOf("CS/BP");
+    const cell = GRID_ROWS.map((row) => row[col]).find((c) => c.text === "Ti/Ne");
+    expect(partial.selections).toEqual(selectionsFromCell(cell, "CS/BP"));
+    expect(partial.extraSelections).toBeUndefined();
+  });
+
+  it("un binario parcial se aplica tal cual", () => {
+    expect(readPaste("1001")).toEqual({ binary: "1001" });
+    expect(readPaste(" 10-01 ")).toEqual({ binary: "1001" });
+  });
+
+  it("el texto vacío no marca nada", () => {
+    expect(readPaste("")).toEqual({ partial: {} });
+  });
+});
+
+describe("edición del binario", () => {
+  // What the browser leaves in the field: `prev` with [start, end) replaced
+  // by `text`, caret right after the inserted text.
+  function edit(prev, start, end, text = "", inputType) {
+    const next = prev.slice(0, start) + text + prev.slice(end);
+    return editBinary(prev, next, start + text.length, inputType);
+  }
+
+  it("Backspace tras el 4º dígito deja X sin correr los demás", () => {
+    expect(edit(BASE_BINARY, 3, 4, "", "deleteContentBackward")).toEqual({ value: "100X0001101", caret: 3 });
+  });
+
+  it("escribir sobre la X la reemplaza", () => {
+    expect(edit("100X0001101", 3, 3, "1", "insertText")).toEqual({ value: BASE_BINARY, caret: 4 });
+  });
+
+  it("con el campo lleno escribir sobrescribe el carácter bajo el cursor", () => {
+    expect(edit(BASE_BINARY, 0, 0, "0", "insertText")).toEqual({ value: "00010001101", caret: 1 });
+    expect(edit(BASE_BINARY, 2, 2, "x", "insertText")).toEqual({ value: "10X10001101", caret: 3 });
+    expect(edit(BASE_BINARY, 11, 11, "0", "insertText")).toEqual({ value: BASE_BINARY, caret: 11 });
+  });
+
+  it("seleccionar todo + Supr deja todo en X", () => {
+    expect(edit(BASE_BINARY, 0, 11, "", "deleteContentForward")).toEqual({ value: "XXXXXXXXXXX", caret: 0 });
+  });
+
+  it("Supr al inicio borra el 1º y pasa al siguiente", () => {
+    expect(edit(BASE_BINARY, 0, 1, "", "deleteContentForward")).toEqual({ value: "X0010001101", caret: 1 });
+  });
+
+  it("borrar dentro de una tira de dígitos iguales borra el que corresponde", () => {
+    // 10010001101: positions 4-6 are all "0"; deleting the 6th must not
+    // clear the 5th or 7th.
+    expect(edit(BASE_BINARY, 5, 6, "", "deleteContentBackward")).toEqual({ value: "10010X01101", caret: 5 });
+  });
+
+  it("escribir sobre una selección la reemplaza y deja X en el resto", () => {
+    expect(edit(BASE_BINARY, 2, 6, "1", "insertText")).toEqual({ value: "101XXX01101", caret: 3 });
+  });
+
+  it("pegar varios dígitos sobrescribe desde el cursor", () => {
+    expect(edit(BASE_BINARY, 2, 2, "111", "insertFromPaste")).toEqual({ value: "10111001101", caret: 5 });
+    expect(edit(BASE_BINARY, 9, 9, "0000", "insertFromPaste")).toEqual({ value: "10010001100", caret: 11 });
+    expect(edit(BASE_BINARY, 2, 2, "1 a-1", "insertFromPaste")).toEqual({ value: "10110001101", caret: 4 });
+  });
+
+  it("otros caracteres se ignoran", () => {
+    expect(edit(BASE_BINARY, 4, 4, "a", "insertText")).toEqual({ value: BASE_BINARY, caret: 4 });
   });
 });

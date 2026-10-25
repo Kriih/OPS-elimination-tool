@@ -9,11 +9,10 @@ import {
   isIntrovertHeader,
   formatHeaderCode,
   mbtiTypeFromCell,
-  parsePastedCode,
   selectionsFromCell,
 } from "./typeGrid";
 import { CHECKLIST_SECTIONS, checklistItemChecked, findChecklistItem } from "./checklistData";
-import { parse, selectionsToBinary, toSelections, validate } from "./typeCode";
+import { editBinary, readPaste, selectionsToBinary } from "./typeCode";
 import TotemCurve from "./TotemCurve";
 import ReadingTab from "./ReadingTab";
 
@@ -96,6 +95,7 @@ export default function App() {
   const [extraSelections, setExtraSelections] = useState(Array(EXTRA_PAIRS.length).fill(null));
   const [activeTab, setActiveTab] = useState(null);
   const [pasteValue, setPasteValue] = useState("");
+  const [pasteErrors, setPasteErrors] = useState([]);
   const [copiedField, setCopiedField] = useState(null);
 
   function handleCopy(text, field) {
@@ -214,46 +214,35 @@ export default function App() {
 
   function handleBinaryChange(e) {
     const input = e.target;
-    const cursor = input.selectionStart;
-    const before = input.value.length;
-    const raw = input.value.replace(/[^01xX]/g, "").slice(0, binaryLength);
-    applyBinaryString(raw);
+    const { value, caret } = editBinary(binary, input.value, input.selectionEnd, e.nativeEvent.inputType);
+    applyBinaryString(value);
 
-    // The field's value is always re-derived from state (it can normalize
-    // stray characters), which would otherwise throw the caret to the end
-    // after every keystroke. Put it back where the user was typing.
-    requestAnimationFrame(() => {
-      if (document.activeElement === input) {
-        const shrink = before - input.value.length;
-        const pos = Math.max(0, cursor - Math.max(shrink, 0));
-        input.setSelectionRange(pos, pos);
-      }
-    });
+    // Write the edited value back right away and place the caret: the
+    // re-render then finds the field already up to date and leaves the
+    // caret alone (otherwise React would reset the value and throw the
+    // caret to the end).
+    input.value = value;
+    input.setSelectionRange(caret, caret);
   }
 
   function handlePasteCode(e) {
     const value = e.target.value;
     setPasteValue(value);
 
-    // Looks like a (possibly partial) binary string, e.g "010X1..." or
-    // "FM010010111" - apply it the same way the binary field does.
-    const stripped = value.replace(/[\s-]/g, "");
-    if (stripped.length > 0 && /^[01xX]+$/.test(stripped)) {
-      applyBinaryString(stripped.slice(0, binaryLength));
+    const result = readPaste(value, binaryLength);
+    setPasteErrors(result.errors || []);
+    if (result.binary) {
+      applyBinaryString(result.binary);
       return;
     }
-
-    // A complete, valid code sets every toggle; anything else (partial
-    // codes, "_", loose headers...) goes through the lenient parser.
-    const strict = parse(value);
-    if (strict.ok && validate(strict.value).length === 0) {
-      const { selections: next, extraSelections: nextExtra } = toSelections(strict.value);
-      setSelections(next);
-      setExtraSelections(nextExtra);
+    if (result.selections) {
+      setSelections(result.selections);
+      setExtraSelections(result.extraSelections);
       return;
     }
+    if (!result.partial) return;
 
-    const parsed = parsePastedCode(value);
+    const parsed = result.partial;
     if (parsed.selections) {
       setSelections((prev) => prev.map((old, i) => (parsed.selections[i] === undefined ? old : parsed.selections[i])));
     }
@@ -268,6 +257,7 @@ export default function App() {
     setSelections(Array(PAIRS.length).fill(null));
     setExtraSelections(Array(EXTRA_PAIRS.length).fill(null));
     setPasteValue("");
+    setPasteErrors([]);
   }
 
   function handleGridCellClick(cell, colIndex) {
@@ -410,7 +400,6 @@ export default function App() {
             className="result-binary"
             type="text"
             inputMode="numeric"
-            maxLength={binaryLength}
             value={binary}
             onChange={handleBinaryChange}
           />
@@ -430,7 +419,12 @@ export default function App() {
           placeholder="Pegar código o binario (ej: Ti/Ne-CS/B(P) o 010010111)"
           value={pasteValue}
           onChange={handlePasteCode}
+          aria-invalid={pasteErrors.length > 0 || undefined}
+          aria-describedby="paste-error"
         />
+        <p id="paste-error" className="paste-error" aria-live="polite">
+          {pasteErrors.length > 0 && `! ${pasteErrors.join(" ")}`}
+        </p>
       </div>
 
       <div className="navbar">
