@@ -4,6 +4,10 @@ Este archivo es para retomar el proyecto en otra sesión (de Claude Code o de
 cualquier otra persona). Reúne qué es el proyecto, cómo correrlo, dónde vive
 cada cosa, y las decisiones/trampas no obvias que costó descubrir.
 
+Plan en curso: ver [`como-se-lee.md`](como-se-lee.md) (pestaña "Cómo se
+lee", parser/validador de códigos, molécula, colores de función, y el
+orden de trabajo pendiente).
+
 ## Qué es esto
 
 Una app React/Vite de una sola página que implementa el **Elimination Tool**
@@ -44,51 +48,78 @@ Repo: **https://github.com/Kriih/OPS-elimination-tool**
 
 ### Detalle del entorno de esta máquina (por si hace falta de nuevo)
 
-- El sandbox de Claude Code en esta máquina **no tiene Node.js** en su
-  PATH ni en su filesystem visible. Node SÍ está instalado en el *host*
-  real en `~/.local/opt/node/bin` (node v20.17), pero esa ruta tampoco es
-  visible directamente desde el sandbox.
-- Para correr cualquier comando de `npm`/`node`, hay que usar
-  `/app/bin/host-spawn` (delega el comando al shell real del host) y
-  agregar `~/.local/opt/node/bin` al `PATH` a mano, ej:
+El proyecto se movió de máquina: antes vivía en `/home/cro/Desktop/OPS`
+dentro de un sandbox sin Node (había que usar `/app/bin/host-spawn`).
+**Eso ya no aplica.** El entorno actual es:
+
+- Repo en `/home/cri/Projects/OPS-elimination-tool` (Linux, PikaOS).
+- Node v24 y npm 12 están en el PATH normal (`/usr/bin/node`); se corren
+  directo, sin trucos.
+- npm bloquea por defecto el postinstall de `esbuild` ("install scripts
+  blocked because they are not covered by allowScripts"). Se puede
+  ignorar: Vite funciona igual porque el binario viene por la dependencia
+  opcional de plataforma.
+- `.claude/launch.json` tiene una configuración `frontend` (`npm --prefix
+  frontend run dev`, puerto 5173) para levantar el dev server desde el
+  panel de preview de Claude Code.
+- **Conflicto de puerto 5173**: en esta máquina también corre el proyecto
+  Docker Compose `troppo` (14 contenedores: `troppo_frontend`,
+  `troppo_backend`, postgres, rabbitmq, grafana, etc.), y
+  `troppo_frontend` ocupa el 5173. Si Vite salta a 5174, es eso. Para
+  liberar el puerto (solo si el usuario lo pide):
   ```bash
-  /app/bin/host-spawn bash -lc 'export PATH=/home/cro/.local/opt/node/bin:$PATH; cd /home/cro/Desktop/OPS/frontend && npm run dev'
+  docker stop $(docker ps -q --filter label=com.docker.compose.project=troppo)
   ```
-- El sandbox y el host **comparten red** (localhost:5173 es accesible
-  desde ambos lados), pero **no comparten todo el filesystem** — el
-  sandbox ve `~/Desktop` pero no `~/.local`. Para copiar archivos entre
-  ambos (ej. screenshots) hay que pasar por una carpeta compartida como
-  `~/Desktop/OPS` usando `host-spawn ... cp ...`.
-- El servidor de dev corre en background en el *host* (con `nohup ... &
-  disown`), así que sobrevive a que termine la sesión de Claude Code, pero
-  **no sobrevive a un reinicio de la máquina** — si `curl localhost:5173`
-  falla, hay que volver a levantarlo con el comando de arriba.
-- No hay `gh` (GitHub CLI) instalado. Git normal sí, y ya tiene
-  credenciales guardadas (`credential.helper=store`, usuario `Kriih`), así
-  que `git push` funciona directo sin pedir nada.
-- El token de git guardado **no tiene el scope `workflow`**, así que no se
-  puede pushear/editar `.github/workflows/*.yml` por git normal (GitHub lo
-  rechaza). Por eso `.github/workflows/deploy.yml` existe localmente pero
-  quedó **sin trackear en git** (ver `.gitignore`/estado del repo) — es un
-  workflow de GitHub Actions ya armado para deploy automático a Pages, pero
-  no se puede subir hasta que el usuario regenere su token con ese scope.
-  Mientras tanto, publicar es manual con `npm run deploy` (ver arriba).
-- Para tomar capturas de pantalla de la app sin navegador visible, se usó
-  Firefox headless desde el host (con perfil temporal aislado porque solo
-  puede haber una instancia normal de Firefox corriendo a la vez):
+  y para volver a levantarlos:
   ```bash
-  /app/bin/host-spawn bash -lc 'rm -rf /tmp/ffprofileX; mkdir -p /tmp/ffprofileX; firefox --headless -no-remote -profile /tmp/ffprofileX --window-size=1000,1600 --screenshot=/tmp/shot.png "http://localhost:5173/OPS-elimination-tool/"'
+  docker start $(docker ps -aq --filter label=com.docker.compose.project=troppo)
   ```
+- `gh` (GitHub CLI) está instalado y logueado como `Kriih`, con scopes
+  `repo` y `workflow`. Git usa HTTPS contra
+  `https://github.com/Kriih/OPS-elimination-tool.git`.
+- En la máquina anterior el token no tenía scope `workflow`, por eso el
+  `.github/workflows/deploy.yml` (deploy automático a Pages) nunca se
+  subió. **Ese archivo no existe en este checkout**; si se quiere deploy
+  automático habría que rearmarlo, y ahora sí se podría pushear.
+  Mientras tanto, publicar es manual con `npm run deploy`.
+- Para verificar visualmente cambios se usa el navegador integrado de
+  Claude Code (panel de preview) sobre
+  `http://localhost:5173/OPS-elimination-tool/`, en vez del Firefox
+  headless que se usaba antes.
 
 ## Estructura del código (`frontend/src/`)
 
-- **`App.jsx`** — todo el componente principal y el layout de la página.
+- **`App.jsx`** — todo el componente principal y el layout de la página:
+  toggles, grilla clickeable (clic en una celda fija las coins de ese
+  tipo), código resultante + binario con botones de copiar casi
+  invisibles, caja para pegar un código o binario, y la barra de tabs
+  (`NAV_TABS`: Checklist, Traits, Interpretation, Emoji). Debajo de los
+  toggles hay un botón **Reset** que deja todos los toggles en `null` y
+  vacía la caja de pegar. El tab Emoji
+  incluye una curva normal en SVG que ubica los 16 animales-totem según
+  su puntaje (-7..+7; `-0` y `+0` se corren a ±0.5 para no superponerse).
 - **`typeGrid.js`** — los datos "duros" del sistema: la grilla de 128 tipos
   (`GRID_ROWS`/`GRID_HEADERS`), las reglas de qué se desvanece con cada
   toggle (`FADE_RULES`), la regla de Introvertido/Extrovertido
   (`isIntrovertHeader`), el cálculo del código MBTI (`mbtiTypeFromCell`), el
   parser de código pegado / clic en la grilla (`parsePastedCode`,
   `selectionsFromCell`), y la tabla de animales-totem con emoji (`TOTEMS`).
+- **`typeCode.js`** — parser y validador **estricto** de códigos
+  completos, en forma corta (`MF-Ni/Fe-BP/C(S)`, con MBTI y ` #1`–` #4`
+  opcionales) y larga (`O/De/Oi/N/F/P/B/INFO/E/M-S/F-De`): `SHORT_CODE`,
+  `LONG_CODE`, `parse`, `validate` (mensajes legibles: dos Observer,
+  animales repetidos, 1º animal incorrecto, 2º animal opuesto al 1º, MBTI
+  que no coincide; al final busca la celda en `GRID_ROWS`), `toShort`,
+  `toLong`, `toSelections` (estado de toggles de la app) y
+  `selectionsToBinary` (el binario que muestra la app). La caja de pegar
+  prueba primero `parse` + `validate` y, si no pasa, sigue con
+  `parsePastedCode` (tolerante: parciales, `_`, headers sueltos).
+- **`typeCode.test.js`** — tests con Vitest (`npm test` en `frontend/`):
+  caso base, las 512 combinaciones de la grilla (ida y vuelta corta↔larga,
+  MBTI, y que `toSelections` coincida con el clic en la grilla), códigos
+  inválidos con su mensaje, y un barrido de los 65.536 códigos corto
+  sintácticamente válidos para confirmar que `validate` siempre da un
+  motivo específico.
 - **`checklistData.js`** — el contenido completo del tab "Checklist"
   (títulos, descripciones, y las interpretaciones/ejemplos del tab
   "Interpretation"), organizado en 5 secciones (Human Needs, Letters,
@@ -102,6 +133,15 @@ Repo: **https://github.com/Kriih/OPS-elimination-tool**
   "design language" de la propia interfaz de Claude Code: fondo casi
   negro, texto monoespaciado, viñetas `●` de color antes de los títulos,
   botones tipo pill).
+  **Excepción aprobada (2026-10-24):** los colores por letra de función,
+  definidos en `:root` de `App.css` como `--fn-n` (N, amarillo `#e8c547`),
+  `--fn-s` (S, verde `#4caf6e`), `--fn-t` (T, azul `#4a90d9`) y `--fn-f`
+  (F, rojo `#d9534f`, distinto del acento de UI a propósito). Valen
+  **solo para los nodos de función** (molécula y fichas de "Cómo se lee",
+  ver `como-se-lee.md` 4.3); el resto de la interfaz sigue en la familia
+  de `#b53241`. No sacarlos pensando que rompen la regla del rojo, y si
+  hay que cambiarlos, cambiarlos ahí. La orientación i/e no cambia el
+  color.
 - **`App.fractal.jsx`** — código del proyecto anterior (un fractal de
   líneas), sin usar, dejado como backup por si se quiere recuperar.
 
@@ -133,25 +173,37 @@ Repo: **https://github.com/Kriih/OPS-elimination-tool**
   ("Play or Blast last" = Introverted).
 - **Modalidades F/M** (filas extra "weak/strong" y "cat/dog", debajo de la
   Elimination Tool): son proxies del eje Femenino/Masculino de "Sexuales"
-  del sistema OPS real (`De Feminine/Masculine` y `S Feminine/Masculine`).
-  Por convención (la misma que usa subjectivepersonality.com en su
-  parámetro `m=`), el orden es **[De F/M][S F/M]** — por eso
-  `weak/strong` se interpreta como el eje De y `cat/dog` como el eje S en
-  el checklist, aunque las etiquetas visibles de esos toggles las eligió
-  el usuario y no se renombraron.
+  del sistema OPS real. El orden del código es **[S F/M][De F/M]**
+  (confirmado por el usuario el 2026-10-25): `MF` = Masculine Sensory +
+  Feminine extraverted Decider.
+  - `weak/strong` (fila 1, índice 0) = **eje S**: weak = F, strong = M.
+    Da la 1ª letra del código y el 1er dígito del binario.
+  - `cat/dog` (fila 2, índice 1) = **eje De** (cómo ve a la gente: F-De
+    los ve como gatitos): cat = F, dog = M. Da la 2ª letra.
+  - El checklist (`checklistData.js`, sección Modalities) usa `index: 0`
+    para S y `index: 1` para De. Antes estaba al revés (se asumía
+    `[De][S]`, la convención del parámetro `m=` de
+    subjectivepersonality.com); no volver a esa lectura.
+  - Por pedido del usuario las filas de la UI no se reordenaron ni se
+    renombraron.
 - **Código de tipo** (ej. `MF-Ni/Te-BS/P(C)`): `[modalidad FM]-[par de
   funciones]-[header de columna con la 4ta letra entre paréntesis]`.
-- **Código MBTI** (ej. `ENTP`, se antepone al código de tipo): N/S y F/T
-  salen directo de las 2 funciones del par. **I/E reutiliza la regla de
-  arriba** (última posición del ranking de animales), no la regla clásica
-  de MBTI (que no funciona para los pares "del mismo signo" Sleep/Play,
-  donde ninguna de las 2 funciones es extrovertida). **J/P sale del eje
-  primario de la celda**: Oi→J, Oe→P, Di→P, De→J — es la misma regla que
-  usa la leyenda de la grilla original (`ExxP`/`IxxJ`/`ExxJ`/`IxxP`), y es
-  la única que funciona también para Sleep/Play.
-- **Ambiguo / sin coincidencia**: si quedan 0 o más de 1 celda sin
-  desvanecer en la grilla (según las coins marcadas), el código de tipo
-  muestra `(sin coincidencia)` o `(ambiguo)` en vez de un tipo concreto.
+- **Código MBTI** (ej. `INTJ`, se antepone al código de tipo): N/S y F/T
+  salen directo de las 2 funciones del par. **I/E sale de la orientación
+  de la primera función** (la 1ª Savior): Ni/Te → `I`, Ne/Ti → `E`
+  (corregido por el usuario el 2026-10-25; antes se usaba el último
+  animal, y eso daba `ENTJ` para Ni/Te). Ojo: **no es lo mismo que la
+  moneda 9** (I/E de OPS, que sí depende del último animal), así que un
+  tipo puede ser `INFJ` y extravertido en OPS a la vez (ej.
+  `Ni/Fe-BP/C(S)`). **J/P sale del eje primario de la celda**: Oi→J,
+  Oe→P, Di→P, De→J — es la misma regla que usa la leyenda de la grilla
+  original (`ExxP`/`IxxJ`/`ExxJ`/`IxxP`), y es la única que funciona
+  también para Sleep/Play.
+- **Ambiguo / sin coincidencia**: si no queda ninguna celda sin
+  desvanecer, el código muestra `(sin coincidencia)`. Si queda más de
+  una, se combinan los códigos de todos los candidatos posición por
+  posición (`mergeAmbiguousCode` en `App.jsx`): las letras en que todos
+  coinciden se mantienen y las que difieren se reemplazan por `_`.
 
 ## Fuentes usadas (para no inventar de nuevo)
 
@@ -186,14 +238,21 @@ Repo: **https://github.com/Kriih/OPS-elimination-tool**
 
 ## Preferencias del usuario a tener en cuenta
 
+- **Caso base para probar cualquier cambio:** `MF-Ni/Fe-BP/C(S)`, con la
+  modalidad sensorial M ("audio": `strong`, S Masculine) y De F (`cat`).
+  Resultado esperado: código `INFJ MF-Ni/Fe-BP/C(S)`, binario
+  `10010001101`, forma larga `O/De/Oi/N/F/P/B/INFO/E/M-S/F-De`, checklist
+  con ✓ en S Masculine y De Feminine. Es MBTI `INFJ` pero E en la moneda 9
+  de OPS (último animal Sleep).
+
 - Le gusta poder **deseleccionar** cualquier toggle (volver a `null`/`X`),
   no forzar que todo esté siempre definido.
 - Pidió explícitamente **compresión vertical** (poco padding, todo
   compacto) y **sin verde** en la paleta — solo la familia de rojo
   `#b53241`.
 - Antes de dar por buena una tanda de cambios, conviene levantar el dev
-  server y sacar una captura (headless Firefox) para confirmar visualmente
-  — no alcanza con que compile.
+  server y sacar una captura (navegador integrado de Claude Code) para
+  confirmar visualmente — no alcanza con que compile.
 - Los cambios se suben a git solo cuando el usuario lo pide explícitamente
   ("sube los cambios", "súbelo a GitHub"), no automáticamente después de
   cada tanda de ediciones.

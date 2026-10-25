@@ -494,27 +494,9 @@ export const CHECKLIST_SECTIONS = [
     title: "Modalities",
     items: [
       {
-        title: "De Feminine",
-        lines: ["Moveable with the tribe, direct on identity.", "Pressure on self, easy on others."],
-        test: { kind: "extra", index: 0, side: "left" },
-        opposite: "De Masculine",
-        interpretation:
-          "Su función Decisora Extrovertida (De: Fe o Te) es Femenina: flexible, tranquila y no confrontacional con la tribu — aunque puede ser firme y directa en su propia identidad.",
-        example: "Cede fácil en un plan grupal y evita el enfrentamiento, pero no transa un milímetro en algo que define quién es él.",
-      },
-      {
-        title: "De Masculine",
-        lines: ["Direct with the tribe, moveable on identity.", "Pressure on others, easy on self."],
-        test: { kind: "extra", index: 0, side: "right" },
-        opposite: "De Feminine",
-        interpretation:
-          "Su función Decisora Extrovertida (De: Fe o Te) es Masculina: inflexible, impositiva y persistente con la tribu.",
-        example: "Impone su plan al grupo sin problema y no da el brazo a torcer fácilmente frente a los demás.",
-      },
-      {
         title: "S Feminine",
         lines: ["Solid with the concepts, moveable with the facts.", "Visual/Tester, visualizes pictures."],
-        test: { kind: "extra", index: 1, side: "left" },
+        test: { kind: "extra", index: 0, side: "left" },
         opposite: "S Masculine",
         interpretation:
           "Su función Sensorial es Femenina, \"en el medio\": según el documento, usa mucho más su Intuición que alguien con Sensación Masculina.",
@@ -523,12 +505,30 @@ export const CHECKLIST_SECTIONS = [
       {
         title: "S Masculine",
         lines: ["Solid with the facts, moveable with the concepts.", "Audio/Kinesthetic, knows timeline."],
-        test: { kind: "extra", index: 1, side: "right" },
+        test: { kind: "extra", index: 0, side: "right" },
         opposite: "S Feminine",
         interpretation:
           "Su función Sensorial es Masculina, \"al frente\": se apoya mucho menos en la Intuición, pegada a los hechos concretos, uno por uno.",
         example:
           "\"Cuando me levanto por la mañana, primero bebo un poco de agua, luego reviso mis correos electrónicos, después me ducho y finalmente desayuno\" — un reporte hecho por hecho, en orden.",
+      },
+      {
+        title: "De Feminine",
+        lines: ["Moveable with the tribe, direct on identity.", "Pressure on self, easy on others."],
+        test: { kind: "extra", index: 1, side: "left" },
+        opposite: "De Masculine",
+        interpretation:
+          "Su función Decisora Extrovertida (De: Fe o Te) es Femenina: flexible, tranquila y no confrontacional con la tribu — aunque puede ser firme y directa en su propia identidad.",
+        example: "Cede fácil en un plan grupal y evita el enfrentamiento, pero no transa un milímetro en algo que define quién es él.",
+      },
+      {
+        title: "De Masculine",
+        lines: ["Direct with the tribe, moveable on identity.", "Pressure on others, easy on self."],
+        test: { kind: "extra", index: 1, side: "right" },
+        opposite: "De Feminine",
+        interpretation:
+          "Su función Decisora Extrovertida (De: Fe o Te) es Masculina: inflexible, impositiva y persistente con la tribu.",
+        example: "Impone su plan al grupo sin problema y no da el brazo a torcer fácilmente frente a los demás.",
       },
     ],
   },

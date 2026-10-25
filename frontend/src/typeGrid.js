@@ -176,7 +176,13 @@ export function formatHeaderCode(header) {
   return `${header.slice(0, -1)}(${header.slice(-1)})`;
 }
 
-// Derives the 4-letter MBTI-style code from a grid cell + its overall I/E.
+// Derives the 4-letter MBTI-style code from a grid cell.
+//
+// I/E comes from the attitude of the FIRST function of the pair (the 1st
+// Savior): Ni/Te -> I, Ne/Ti -> E. This is the MBTI letter only - it is
+// independent of OPS's own Introvert/Extrovert coin (row 9), which depends
+// on the last animal (isIntrovertHeader), so e.g. Ni/Fe BP/C(S) is INFJ
+// while still being an OPS Extrovert.
 //
 // N/S and T/F just come from the two function letters. J/P comes from the
 // cell's PRIMARY axis (the one that decides Decider-vs-Observer): Oi->J,
@@ -184,17 +190,16 @@ export function formatHeaderCode(header) {
 // the source site's own grid legend, and it's the only rule that also
 // works for the "same-attitude" Sleep/Play pairs (where classic MBTI's
 // "extraverted function decides J/P" shortcut has no extraverted function
-// to point at). I/E is NOT re-derived from the pair's own attitudes -
-// OPS's overall Introvert/Extrovert is a property of the full animal
-// ranking (isIntrovertHeader), independent of which 2 functions are shown.
-export function mbtiTypeFromCell(cell, isIntrovert) {
+// to point at).
+export function mbtiTypeFromCell(cell) {
   const { classes, text } = cell;
   const isDecider = classes.includes("decider");
   const jp = isDecider ? (classes.includes("di") ? "P" : "J") : classes.includes("oi") ? "J" : "P";
   const [a, b] = text.split("/");
+  const ie = a[1] === "i" ? "I" : "E";
   const ns = [a, b].find((f) => f[0] === "N" || f[0] === "S")[0];
   const ft = [a, b].find((f) => f[0] === "F" || f[0] === "T")[0];
-  return `${isIntrovert ? "I" : "E"}${ns}${ft}${jp}`;
+  return `${ie}${ns}${ft}${jp}`;
 }
 
 // Given one grid cell (and the header of the column it's in), derive the

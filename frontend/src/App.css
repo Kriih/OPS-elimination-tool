@@ -12,6 +12,12 @@
   --accent-bright-soft: rgba(219, 103, 116, 0.16);
   --accent-dim: #7a2129;
   --accent-pale: #f0b9c0;
+  /* Function-letter colors (N/S/T/F). Approved exception to the red-only
+     palette: only for function nodes (molecule and reading cards). */
+  --fn-n: #e8c547;
+  --fn-s: #4caf6e;
+  --fn-t: #4a90d9;
+  --fn-f: #d9534f;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -127,6 +133,30 @@ body {
   margin-top: 6px;
   padding-top: 6px;
   border-top: 1px dashed var(--border);
+}
+
+.reset-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.reset-btn {
+  padding: 4px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.reset-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-bright);
 }
 
 .grid-title {

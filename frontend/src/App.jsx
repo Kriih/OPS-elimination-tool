@@ -13,6 +13,7 @@ import {
   selectionsFromCell,
 } from "./typeGrid";
 import { CHECKLIST_SECTIONS, checklistItemChecked, findChecklistItem } from "./checklistData";
+import { parse, selectionsToBinary, toSelections, validate } from "./typeCode";
 
 const NAV_TABS = ["Checklist", "Traits", "Interpretation", "Emoji"];
 
@@ -202,7 +203,7 @@ export default function App() {
   const totem = resolvedHeader ? TOTEMS[resolvedHeader] : null;
   const saviorFunctions = survivorCount === 1 ? survivor.cell.text.split("/") : null;
   const mbti =
-    survivorCount === 1 ? mbtiTypeFromCell(survivor.cell, isIntrovertHeader(resolvedHeader)) : null;
+    survivorCount === 1 ? mbtiTypeFromCell(survivor.cell) : null;
 
   const typeCode =
     survivorCount === 0
@@ -222,9 +223,7 @@ export default function App() {
 
   const binaryLength = EXTRA_PAIRS.length + PAIRS.length;
 
-  const binary =
-    extraSelections.map((side) => (side === "right" ? "1" : side === "left" ? "0" : "X")).join("") +
-    selections.map((side) => (side === "right" ? "1" : side === "left" ? "0" : "X")).join("");
+  const binary = selectionsToBinary(extraSelections, selections);
 
   function applyBinaryString(raw) {
     const extraRaw = raw.slice(0, EXTRA_PAIRS.length);
@@ -281,6 +280,16 @@ export default function App() {
       return;
     }
 
+    // A complete, valid code sets every toggle; anything else (partial
+    // codes, "_", loose headers...) goes through the lenient parser.
+    const strict = parse(value);
+    if (strict.ok && validate(strict.value).length === 0) {
+      const { selections: next, extraSelections: nextExtra } = toSelections(strict.value);
+      setSelections(next);
+      setExtraSelections(nextExtra);
+      return;
+    }
+
     const parsed = parsePastedCode(value);
     if (parsed.selections) {
       setSelections((prev) => prev.map((old, i) => (parsed.selections[i] === undefined ? old : parsed.selections[i])));
@@ -290,6 +299,12 @@ export default function App() {
         prev.map((old, i) => (parsed.extraSelections[i] === undefined ? old : parsed.extraSelections[i]))
       );
     }
+  }
+
+  function handleReset() {
+    setSelections(Array(PAIRS.length).fill(null));
+    setExtraSelections(Array(EXTRA_PAIRS.length).fill(null));
+    setPasteValue("");
   }
 
   function handleGridCellClick(cell, colIndex) {
@@ -366,6 +381,12 @@ export default function App() {
             </div>
           );
         })}
+      </div>
+
+      <div className="reset-row">
+        <button type="button" className="reset-btn" onClick={handleReset}>
+          Reset
+        </button>
       </div>
 
       <h2 className="title grid-title">Type Grid</h2>
