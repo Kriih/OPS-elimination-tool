@@ -20,7 +20,7 @@ export const SHORT_CODE =
 export const LONG_CODE =
   /^(?<od>O|D)\/(?<d>Di|De)\/(?<o>Oi|Oe)\/(?<ns>N|S)\/(?<ft>F|T)\/(?<sp>S|P)\/(?<cb>C|B)\/(?<ie4>INFO|ENERGY)\/(?<ie>I|E)\/(?<ms>[MF]-S)\/(?<mde>[MF]-De)$/;
 
-const ANIMAL_NAMES = { S: "Sleep", P: "Play", C: "Consume", B: "Blast" };
+export const ANIMAL_NAMES = { S: "Sleep", P: "Play", C: "Consume", B: "Blast" };
 
 // Sleep = Oi+Di, Play = Oe+De, Consume = Oe+Di, Blast = Oi+De.
 const OPPOSITE_ANIMAL = { S: "P", P: "S", C: "B", B: "C" };
@@ -30,12 +30,23 @@ function isObserverFn(fn) {
 }
 
 // The animal formed by one Observer + one Decider function.
-function animalOf(observer, decider) {
+export function animalOf(observer, decider) {
   const oi = observer[1] === "i";
   const di = decider[1] === "i";
   if (oi && di) return "S";
   if (!oi && !di) return "P";
   return di ? "C" : "B";
+}
+
+const OPPOSITE_LETTER = { N: "S", S: "N", F: "T", T: "F" };
+
+// Full function stack for a Savior pair: Ni/Fe -> [Ni, Fe, Ti, Se]. The
+// 3rd function mirrors the 2nd and the 4th mirrors the 1st (opposite
+// letter, opposite attitude), so 1-4 and 2-3 are the two axes of opposites.
+export function stackOf(pair) {
+  const [a, b] = pair.split("/");
+  const mirror = (f) => `${OPPOSITE_LETTER[f[0]]}${f[1] === "i" ? "e" : "i"}`;
+  return [a, b, mirror(b), mirror(a)];
 }
 
 // The animal ranked last decides both Info/Energy and I/E (coins 8 and 9):

@@ -14,8 +14,10 @@ import {
 } from "./typeGrid";
 import { CHECKLIST_SECTIONS, checklistItemChecked, findChecklistItem } from "./checklistData";
 import { parse, selectionsToBinary, toSelections, validate } from "./typeCode";
+import TotemCurve from "./TotemCurve";
+import ReadingTab from "./ReadingTab";
 
-const NAV_TABS = ["Checklist", "Traits", "Interpretation", "Emoji"];
+const NAV_TABS = ["Checklist", "Traits", "Interpretation", "Reading", "Emoji"];
 
 const PAIRS = [
   {
@@ -88,45 +90,6 @@ const EXTRA_PAIRS = [
   { left: "weak", leftCode: "F", right: "strong", rightCode: "M" },
   { left: "cat", leftCode: "F", right: "dog", rightCode: "M" },
 ];
-
-// Bell-curve chart (Emoji tab): places each of the 16 totems along a normal
-// distribution using their own score (-7..+7) as the x position. "-0" and
-// "+0" share the numeric value 0, so they're nudged to -0.5/+0.5 to keep
-// their markers from overlapping at the curve's peak.
-const CURVE_WIDTH = 600;
-const CURVE_HEIGHT = 220;
-const CURVE_PAD_X = 32;
-const CURVE_TOP = 34;
-const CURVE_BASELINE = 172;
-const CURVE_SIGMA = 4;
-
-function totemScoreX(score) {
-  if (score === "-0") return -0.5;
-  if (score === "+0") return 0.5;
-  return parseInt(score, 10);
-}
-
-function gaussian(x) {
-  return Math.exp(-(x * x) / (2 * CURVE_SIGMA * CURVE_SIGMA));
-}
-
-function curveScaleX(x) {
-  return CURVE_PAD_X + ((x + 7.5) / 15) * (CURVE_WIDTH - 2 * CURVE_PAD_X);
-}
-
-function curveScaleY(v) {
-  return CURVE_BASELINE - v * (CURVE_BASELINE - CURVE_TOP);
-}
-
-const CURVE_LINE_D = (() => {
-  const points = [];
-  for (let x = -7.5; x <= 7.5 + 1e-9; x += 0.25) {
-    points.push(`${curveScaleX(x)},${curveScaleY(gaussian(x))}`);
-  }
-  return `M${points.join(" L")}`;
-})();
-
-const CURVE_AREA_D = `${CURVE_LINE_D} L${curveScaleX(7.5)},${CURVE_BASELINE} L${curveScaleX(-7.5)},${CURVE_BASELINE} Z`;
 
 export default function App() {
   const [selections, setSelections] = useState(Array(PAIRS.length).fill(null));
@@ -561,6 +524,17 @@ export default function App() {
         </div>
       )}
 
+      {activeTab === "Reading" && (
+        <ReadingTab
+          selections={selections}
+          extraSelections={extraSelections}
+          survivors={survivors}
+          fullCode={fullCode}
+          onSelect={setSelection}
+          onSelectExtra={setExtraSelection}
+        />
+      )}
+
       {activeTab === "Emoji" && (
         <div className="tab-panel emoji-panel">
           {totem ? (
@@ -589,44 +563,10 @@ export default function App() {
             ))}
           </div>
 
-          <div className="totem-curve">
-            <div className="totem-curve-caption">
-              Distribución normal — eje: puntaje del animal, altura: frecuencia
-            </div>
-            <svg
-              className="totem-curve-svg"
-              viewBox={`0 0 ${CURVE_WIDTH} ${CURVE_HEIGHT}`}
-              role="img"
-              aria-label="Animales distribuidos según su puntaje en una curva normal"
-            >
-              <line
-                x1={CURVE_PAD_X}
-                y1={CURVE_BASELINE}
-                x2={CURVE_WIDTH - CURVE_PAD_X}
-                y2={CURVE_BASELINE}
-                className="curve-axis"
-              />
-              <path d={CURVE_AREA_D} className="curve-area" />
-              <path d={CURVE_LINE_D} className="curve-line" />
-              {TOTEMS_ORDERED.map((t) => {
-                const x = curveScaleX(totemScoreX(t.score));
-                const y = curveScaleY(gaussian(totemScoreX(t.score)));
-                const selected = t.header === resolvedHeader;
-                return (
-                  <g key={t.header} className={`curve-point ${selected ? "selected" : ""}`}>
-                    <line x1={x} y1={y} x2={x} y2={CURVE_BASELINE} className="curve-stem" />
-                    <circle cx={x} cy={y} r={selected ? 13 : 10} className="curve-marker" />
-                    <text x={x} y={y + 4} textAnchor="middle" className="curve-emoji">
-                      {t.emoji}
-                    </text>
-                    <text x={x} y={CURVE_BASELINE + 16} textAnchor="middle" className="curve-score">
-                      {t.score}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
+          <TotemCurve
+            selected={resolvedHeader ? [resolvedHeader] : []}
+            caption="Distribución normal — eje: puntaje del animal, altura: frecuencia"
+          />
         </div>
       )}
     </div>

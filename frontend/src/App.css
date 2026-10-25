@@ -251,6 +251,7 @@ body {
 
 .navbar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
   margin-top: 24px;
@@ -429,6 +430,294 @@ body {
 .interpretation-counter em {
   color: var(--accent);
   font-style: normal;
+}
+
+.reading-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reading-code {
+  color: var(--accent-bright);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.reading-long {
+  color: var(--text);
+  font-size: 0.74rem;
+  overflow-wrap: anywhere;
+}
+
+.reading-summary {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.reading .totem-curve {
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.curve-range {
+  fill: var(--accent-bright-soft);
+  stroke: var(--accent-dim);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.curve-point.dim {
+  opacity: 0.3;
+}
+
+.reading-molecule {
+  margin-top: 14px;
+  padding: 10px 0;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.molecule-svg {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin: 4px auto 0;
+}
+
+.molecule-node {
+  --fn: var(--muted);
+}
+
+.molecule-node.fn-n { --fn: var(--fn-n); }
+.molecule-node.fn-s { --fn: var(--fn-s); }
+.molecule-node.fn-t { --fn: var(--fn-t); }
+.molecule-node.fn-f { --fn: var(--fn-f); }
+
+.molecule-node.demon {
+  opacity: 0.6;
+}
+
+.molecule-disc {
+  fill: var(--fn);
+  stroke: none;
+}
+
+.molecule-ring {
+  fill: var(--bg);
+  stroke: var(--fn);
+  stroke-width: 5;
+}
+
+.molecule-fn {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--fn);
+}
+
+.molecule-node.demon .molecule-fn {
+  font-size: 10px;
+}
+
+.molecule-fn.on-disc {
+  fill: var(--bg);
+}
+
+.molecule-role {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--muted);
+}
+
+.molecule-bond {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.molecule-bond-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--accent-bright);
+}
+
+.molecule-axis-line {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.molecule-share {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: var(--text);
+}
+
+.molecule-legend {
+  font-family: var(--mono);
+  font-size: 8px;
+  fill: var(--muted);
+}
+
+.reading-cards {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reading-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: var(--bg);
+}
+
+.reading-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.reading-coin-num {
+  color: var(--accent-bright);
+  font-size: 0.63rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+}
+
+.reading-coin-name {
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.reading-badge {
+  margin-left: auto;
+  font-size: 0.62rem;
+  border-radius: 999px;
+  padding: 1px 8px;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+}
+
+.reading-badge.deduced {
+  border-color: var(--accent-dim);
+  color: var(--accent-pale);
+}
+
+.reading-badge.undecided,
+.reading-badge.missing {
+  border-color: var(--accent);
+  color: var(--accent-bright);
+}
+
+.reading-side-title {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.reading-face {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.reading-decides {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.reading-field {
+  margin-top: 6px;
+}
+
+.reading-label {
+  color: var(--accent-bright);
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.reading-text {
+  margin: 2px 0 0;
+  color: var(--text);
+  font-size: 0.77rem;
+  line-height: 1.5;
+}
+
+.reading-list {
+  margin: 2px 0 0;
+  padding-left: 16px;
+  color: var(--text);
+  font-size: 0.77rem;
+  line-height: 1.5;
+}
+
+.reading-pending {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.reading-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.reading-side {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.reading-side .reading-pick {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.reading-side .reading-field {
+  margin-bottom: 8px;
+}
+
+.reading-pick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reading-pick {
+  padding: 4px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.reading-pick:hover {
+  border-color: var(--accent);
+  color: var(--accent-bright);
+}
+
+@media (max-width: 600px) {
+  .reading-sides {
+    grid-template-columns: 1fr;
+  }
 }
 
 .emoji-panel {

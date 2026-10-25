@@ -43,6 +43,7 @@ Compila con `vite build` y sube `dist/` a la rama `gh-pages`.
 - **Binario editable**: un binario de 11 dígitos (con `X` para los toggles sin marcar) que se puede editar como texto para fijar los toggles. Tanto el código como el binario tienen botón de copiar.
 - **Caja para pegar**: acepta un código completo, en forma corta (`MF-Ni/Fe-BP/C(S)`) o larga (`O/De/Oi/N/F/P/B/INFO/E/M-S/F-De`), un código parcial (ej. `Ti/Ne-CS/B(P)`) o un binario, y marca los toggles correspondientes.
 - **Reset**: botón debajo de los toggles que los desmarca todos.
+- **Reading**: lectura explicada del tipo, con una ficha por moneda, la escala de -7 a +7 y una "molécula" con el stack de funciones (Savior, Demon y ejes de opuestos 90/10 y 60/40). Las monedas sin decidir muestran los dos lados para ayudar a elegir. Los textos de las fichas todavía son de relleno.
 - **Tabs Checklist / Traits / Interpretation / Emoji**: el checklist completo (Human Needs, Letters, Functions, Animals, Modalities), sus interpretaciones y el animal-totem resultante con emoji, más una curva normal con los 16 animales según su puntaje. Basado en [subjectivepersonality.com](https://app.subjectivepersonality.com/).
 
 Para notas de diseño, conceptos de OPS y decisiones no obvias, ver [`contexto.md`](contexto.md).

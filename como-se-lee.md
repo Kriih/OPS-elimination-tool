@@ -123,6 +123,19 @@ Las dos regex son **estrictas**: aceptan solo un código completo y bien escrito
 - Opciones: nueva entrada en `NAV_TABS` ("Cómo se lee") o ampliar "Interpretation". Decidir después de ver qué hace hoy "Interpretation" con `checklistData.js` (`interpretation`, `example`, `opposite`).
 - La pestaña recorre la forma larga y muestra la ficha de cada lado que salió. Arriba va la escala con la campana de Gauss marcando la posición del tipo.
 
+#### Tipo incompleto (decidido por el usuario el 2026-10-25)
+
+Estados posibles, según las monedas marcadas y los candidatos que quedan en la grilla:
+
+| Estado | Qué muestra Reading |
+|---|---|
+| **Tipo resuelto y 11 monedas** | Lectura completa: encabezado, escala, molécula y 11 fichas. |
+| **Monedas deducidas** (la grilla deja un solo tipo, o todos los candidatos coinciden en esa moneda, pero el usuario no la marcó) | La ficha normal, con una etiqueta **"deducida"**. |
+| **Monedas sin decidir** (los candidatos difieren) | **Los dos lados en contraste** (ej. Sleep vs Play), como ayuda para elegir. Con nada marcado, son las 9 monedas en ese formato. |
+| **Grilla resuelta, falta alguna modalidad** | Todo lo demás normal; la ficha de la modalidad que falta dice **"falta elegir"** con un acceso a los toggles (no muestra los dos lados). |
+| **Escala de -7 a +7 con el tipo incompleto** | La campana **resalta el rango** de animales todavía posibles. |
+| **Molécula con el tipo incompleto** | **Oculta** hasta que se sepan las dos Savior. |
+
 ### 4.3 Molécula
 
 - SVG inline en React, como la curva de la pestaña Emoji.
@@ -167,17 +180,17 @@ CognitiveNotes escribe el texto y esta app solo lo muestra. El formato final se 
 ## 5. Decisiones pendientes del usuario
 
 1. ~~Orden de las modalidades.~~ **Resuelto y corregido (2026-10-25):** `[Sensorial M/F][De M/F]`. El usuario confirmó que `weak/strong` = S (weak = F) y `cat/dog` = De (cat = F, "F-De los ve como gatitos"). `EXTRA_PAIRS`, el armado del código, el binario y `parsePastedCode` ya respetaban ese orden; lo que estaba invertido eran los `test` de la sección Modalities en `checklistData.js` y la nota de `contexto.md`. Las filas de la UI no se reordenaron.
-2. **Ubicación de la pestaña:** nueva o dentro de "Interpretation".
+2. ~~Ubicación de la pestaña.~~ **Resuelto (2026-10-25):** pestaña nueva, llamada **"Reading"** (en inglés como las demás: Checklist, Traits, Interpretation, Emoji). "Interpretation" queda como está.
 3. **La escala de -7 a +7:** ¿el valor absoluto significa "qué tan extravertido" o solo el orden del sitio fuente? La ficha `[E]` lo explica según lo que se decida, y si no hay fuente lo marca como interpretación propia.
-4. ~~Colores de la molécula.~~ **Resuelto:** N amarillo, S verde, T azul, F rojo (ver 4.3). Queda abierto si se distingue la orientación i/e con forma o borde.
+4. ~~Colores de la molécula.~~ **Resuelto:** N amarillo, S verde, T azul, F rojo (ver 4.3). Orientación i/e: implementada como **disco relleno = introvertida, anillo = extravertida**, y Savior/Demon por tamaño y opacidad (2026-10-25, propuesta de Claude; **a confirmar por el usuario**).
 5. **Alcance:** las 22 caras de moneda y los 16 tipos, o primero un piloto (las 11 del ejemplo y Ni/Fe).
 
 ## 6. Orden de trabajo sugerido
 
 1. ~~Corregir el orden de las modalidades en la app (5.1) y agregar los colores de función a `App.css` y a `contexto.md`.~~ **Hecho (2026-10-25).**
 2. ~~`typeCode.js` con regex, `parse`, `toLong` y `validate`, más los tests contra la grilla.~~ **Hecho (2026-10-25):** también `toShort`, `toSelections` y `selectionsToBinary`; la caja de pegar ya usa `parse` primero. Tests con Vitest (`npm test`).
-3. Esqueleto de la pestaña con textos de relleno, para fijar el layout.
-4. Molécula en SVG para Ni/Fe.
+3. ~~Esqueleto de la pestaña con textos de relleno, para fijar el layout.~~ **Hecho (2026-10-25):** pestaña "Reading" (`ReadingTab.jsx`, `readingData.js`, `TotemCurve.jsx`), con los estados de "Tipo incompleto" de 4.2. La molécula todavía es solo el stack en chips.
+4. ~~Molécula en SVG para Ni/Fe.~~ **Hecho (2026-10-25):** `Molecule.jsx`, sirve para cualquiera de los 32 pares.
 5. Cargar las fichas que entregue CognitiveNotes (piloto primero).
 6. Resto de las fichas y tipos.
 

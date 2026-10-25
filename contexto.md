@@ -93,11 +93,34 @@ dentro de un sandbox sin Node (había que usar `/app/bin/host-spawn`).
   toggles, grilla clickeable (clic en una celda fija las coins de ese
   tipo), código resultante + binario con botones de copiar casi
   invisibles, caja para pegar un código o binario, y la barra de tabs
-  (`NAV_TABS`: Checklist, Traits, Interpretation, Emoji). Debajo de los
+  (`NAV_TABS`: Checklist, Traits, Interpretation, Reading, Emoji). Debajo de los
   toggles hay un botón **Reset** que deja todos los toggles en `null` y
   vacía la caja de pegar. El tab Emoji
   incluye una curva normal en SVG que ubica los 16 animales-totem según
   su puntaje (-7..+7; `-0` y `+0` se corren a ±0.5 para no superponerse).
+- **`TotemCurve.jsx`** — esa curva como componente, compartido por Emoji y
+  Reading (`selected`, `showRange` para la banda del rango de candidatos,
+  `dimOthers`).
+- **`ReadingTab.jsx`** — pestaña "Reading" ("Cómo se lee", ver
+  `como-se-lee.md`): encabezado con código corto y largo, escala,
+  molécula (`Molecule.jsx`, se muestra cuando se conoce el par de Savior)
+  y una ficha por moneda. Cada moneda está `marked`, `deduced` (no
+  marcada pero todos los candidatos de la grilla coinciden; etiqueta
+  "deducida"), `undecided` (los dos lados en contraste, con botón
+  "Elegir") o, solo las modalidades, `missing` ("falta elegir", con
+  botones que marcan el toggle).
+- **`Molecule.jsx`** — diagrama SVG del stack de funciones: las dos
+  Savior arriba unidas por el enlace del 1º animal (ej. "Blast (B)"), y
+  cada una sobre su opuesta, con los ejes 1–4 (90/10) y 2–3 (60/40).
+  Color del nodo = letra (`--fn-*`); **forma = orientación** (disco
+  relleno = introvertida, anillo = extravertida); **Savior/Demon = tamaño
+  y opacidad**. El stack sale de `stackOf` en `typeCode.js` (testeado en
+  los 32 pares).
+- **`readingData.js`** — contenido de las fichas (`COIN_READINGS`, en el
+  orden de la Elimination Tool + las 2 modalidades; `sides` indexado por
+  el código de la forma larga). Los textos son `PENDING` hasta que
+  CognitiveNotes entregue los reales: se reemplazan ahí, sin tocar los
+  nombres de los campos.
 - **`typeGrid.js`** — los datos "duros" del sistema: la grilla de 128 tipos
   (`GRID_ROWS`/`GRID_HEADERS`), las reglas de qué se desvanece con cada
   toggle (`FADE_RULES`), la regla de Introvertido/Extrovertido

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GRID_HEADERS, GRID_ROWS, formatHeaderCode, mbtiTypeFromCell, selectionsFromCell } from "./typeGrid.js";
-import { parse, selectionsToBinary, toLong, toSelections, toShort, validate } from "./typeCode.js";
+import { animalOf, parse, selectionsToBinary, stackOf, toLong, toSelections, toShort, validate } from "./typeCode.js";
 
 const BASE_SHORT = "MF-Ni/Fe-BP/C(S)";
 const BASE_LONG = "O/De/Oi/N/F/P/B/INFO/E/M-S/F-De";
@@ -111,6 +111,36 @@ describe("códigos inválidos", () => {
         const errors = validate(parseOk(`MF-${f1}/${f2}-${a1}${a2}/${a3}(${a4})`));
         expect(errors.join(" ")).not.toContain("no aparece en la columna");
       }
+    }
+  });
+});
+
+describe("stack de funciones", () => {
+  it("Ni/Fe es Ni, Fe, Ti, Se", () => {
+    expect(stackOf("Ni/Fe")).toEqual(["Ni", "Fe", "Ti", "Se"]);
+  });
+
+  it("en los 32 pares de la grilla: 4 letras distintas, 2 i y 2 e, ejes opuestos", () => {
+    const pairs = [...new Set(GRID_ROWS.flatMap((row) => row.map((cell) => cell.text)))];
+    expect(pairs).toHaveLength(32);
+    for (const pair of pairs) {
+      const stack = stackOf(pair);
+      expect(new Set(stack.map((f) => f[0])).size, pair).toBe(4);
+      expect(stack.filter((f) => f[1] === "i"), pair).toHaveLength(2);
+      for (const [x, y] of [[0, 3], [1, 2]]) {
+        expect(stack[x][1], pair).not.toBe(stack[y][1]);
+      }
+    }
+  });
+
+  it("las dos Savior forman el 1º animal de su columna", () => {
+    for (const row of GRID_ROWS) {
+      row.forEach((cell, col) => {
+        const [a, b] = cell.text.split("/");
+        const observer = "NS".includes(a[0]) ? a : b;
+        const decider = observer === a ? b : a;
+        expect(animalOf(observer, decider), cell.text).toBe(GRID_HEADERS[col][0]);
+      });
     }
   });
 });
