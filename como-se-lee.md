@@ -171,11 +171,11 @@ export const COIN_READINGS = {
 };
 
 export const TYPE_READINGS = {
-  "Ni/Fe": { mbti: "INFJ", stack: ["Ni", "Fe", "Ti", "Se"], dominant: "...", functions: { Fe: "...", Ti: "...", Se: "..." }, axes: { "Ni/Se": "...", "Fe/Ti": "..." }, jumper: "..." },
+  "Ni/Fe": { mbti: "INFJ", stack: ["Ni", "Fe", "Ti", "Se"], notation: "...", dominant: "...", opposites: "...", functions: { Fe: "...", Ti: "...", Se: "..." }, axes: { "Ni/Se": "...", "Fe/Ti": "..." }, jumper: "..." },
 };
 ```
 
-CognitiveNotes escribe el texto y esta app solo lo muestra. El formato final se decide al implementar.
+CognitiveNotes escribe el texto y esta app solo lo muestra. `notation` (notación y sigla) y `opposites` (el problema de los opuestos) se sumaron el 2026-10-25 para cubrir la sección 7; `mbti` y `stack` los calcula la app. El formato pedido a CognitiveNotes está en su `workflow/01 - Lectura del tipo/entrega desde la app 2026-10-25.md`.
 
 ## 5. Decisiones pendientes del usuario
 

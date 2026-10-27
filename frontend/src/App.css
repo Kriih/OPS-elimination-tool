@@ -948,9 +948,25 @@ body {
 
 .legend-chip {
   padding: 2px 10px;
+  border: none;
   border-radius: var(--radius-sm);
+  font-family: var(--mono);
   font-size: 0.66rem;
   font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.legend-chip:hover {
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+.legend.has-active .legend-chip:not(.active) {
+  opacity: 0.35;
+}
+
+.legend-chip.active {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--text);
 }
 
 .legend-chip.oe {

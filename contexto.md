@@ -232,6 +232,13 @@ dentro de un sandbox sin Node (había que usar `/app/bin/host-spawn`).
   Oe→P, Di→P, De→J — es la misma regla que usa la leyenda de la grilla
   original (`ExxP`/`IxxJ`/`ExxJ`/`IxxP`), y es la única que funciona
   también para Sleep/Play.
+- **Leyenda de la grilla** (`GRID_LEGEND`: ExxP, IxxJ, ExxJ, IxxP): cada
+  grupo es el tipo y la orientación de la **1ª Savior**, así que lo fijan
+  dos monedas: ExxP = O + Oe, IxxJ = O + Oi, ExxJ = D + De, IxxP = D + Di
+  (campo `coins`). Los chips son botones: al hacer clic marcan esas dos
+  monedas (y las desmarcan si ya estaban), y se iluminan cuando las dos
+  están marcadas. Un test confirma que cada grupo coincide con sus 32
+  celdas y con la I/E y J/P del MBTI.
 - **Ambiguo / sin coincidencia**: si no queda ninguna celda sin
   desvanecer, el código muestra `(sin coincidencia)`. Si queda más de
   una, se combinan los códigos de todos los candidatos posición por

@@ -111,6 +111,17 @@ export default function App() {
     );
   }
 
+  function legendActive(item) {
+    return Object.entries(item.coins).every(([i, side]) => selections[i] === side);
+  }
+
+  // Clicking a legend chip marks its two coins; clicking it again while
+  // they're marked clears them, like the toggles themselves.
+  function handleLegendClick(item) {
+    const active = legendActive(item);
+    setSelections((prev) => prev.map((v, i) => (i in item.coins ? (active ? null : item.coins[i]) : v)));
+  }
+
   function setExtraSelection(index, side) {
     setExtraSelections((prev) =>
       prev.map((v, i) => (i === index ? (v === side ? null : side) : v))
@@ -374,12 +385,22 @@ export default function App() {
         </table>
       </div>
 
-      <div className="legend">
-        {GRID_LEGEND.map((item) => (
-          <span key={item.label} className={`legend-chip ${item.classes.join(" ")}`}>
-            {item.label}
-          </span>
-        ))}
+      <div className={`legend ${GRID_LEGEND.some(legendActive) ? "has-active" : ""}`}>
+        {GRID_LEGEND.map((item) => {
+          const active = legendActive(item);
+          return (
+            <button
+              type="button"
+              key={item.label}
+              className={`legend-chip ${item.classes.join(" ")} ${active ? "active" : ""}`}
+              onClick={() => handleLegendClick(item)}
+              aria-pressed={active}
+              title={active ? "Desmarcar estas monedas" : "Marcar las monedas de este grupo"}
+            >
+              {item.label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="result">

@@ -131,11 +131,14 @@ export const GRID_ROWS = [
 // from the source page's footer row (it only labels the middle 4 of 16
 // columns; the IxxP/IxxJ/ExxJ/ExxP pattern repeats within every 4-column
 // animal group, so this is the reference site's own shorthand, not an error).
+// Each legend group is the 1st Savior's kind + attitude, so it is fixed by
+// two coins: O/D (row 0) plus Oi/Oe (row 2) for Observers or Di/De (row 1)
+// for Deciders. `coins` maps Elimination Tool row index -> side.
 export const GRID_LEGEND = [
-  { col: 6, label: "ExxP", classes: ["observer", "oe"] },
-  { col: 7, label: "IxxJ", classes: ["observer", "oi"] },
-  { col: 8, label: "ExxJ", classes: ["decider", "de"] },
-  { col: 9, label: "IxxP", classes: ["decider", "di"] },
+  { col: 6, label: "ExxP", classes: ["observer", "oe"], coins: { 0: "left", 2: "right" } },
+  { col: 7, label: "IxxJ", classes: ["observer", "oi"], coins: { 0: "left", 2: "left" } },
+  { col: 8, label: "ExxJ", classes: ["decider", "de"], coins: { 0: "right", 1: "right" } },
+  { col: 9, label: "IxxP", classes: ["decider", "di"], coins: { 0: "right", 1: "left" } },
 ];
 
 // For Elimination Tool rows 0-7 (by index), which grid-cell classes get

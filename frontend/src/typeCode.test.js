@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GRID_HEADERS, GRID_ROWS, formatHeaderCode, mbtiTypeFromCell, selectionsFromCell } from "./typeGrid.js";
+import { GRID_HEADERS, GRID_LEGEND, GRID_ROWS, formatHeaderCode, mbtiTypeFromCell, selectionsFromCell } from "./typeGrid.js";
 import {
   animalOf,
   editBinary,
@@ -245,5 +245,22 @@ describe("edición del binario", () => {
 
   it("otros caracteres se ignoran", () => {
     expect(edit(BASE_BINARY, 4, 4, "a", "insertText")).toEqual({ value: BASE_BINARY, caret: 4 });
+  });
+});
+
+describe("leyenda de la grilla", () => {
+  it.each(GRID_LEGEND.map((item) => [item.label, item]))("%s marca justo las celdas de su grupo", (label, item) => {
+    for (const row of GRID_ROWS) {
+      row.forEach((cell, col) => {
+        const selections = selectionsFromCell(cell, GRID_HEADERS[col]);
+        const inGroup = item.classes.every((c) => cell.classes.includes(c));
+        const coinsMatch = Object.entries(item.coins).every(([i, side]) => selections[i] === side);
+        expect(coinsMatch, `${cell.text} ${GRID_HEADERS[col]}`).toBe(inGroup);
+        if (inGroup) {
+          const mbti = mbtiTypeFromCell(cell);
+          expect(mbti[0] + mbti[3], `${cell.text} ${GRID_HEADERS[col]}`).toBe(label[0] + label[3]);
+        }
+      });
+    }
   });
 });
