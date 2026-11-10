@@ -12,3 +12,11 @@ __pycache__/
 
 # Claude Code worktrees (sesiones paralelas, no son parte del proyecto)
 .claude/worktrees/
+
+# graphify: se versionan graph.json, GRAPH_REPORT.md, manifest.json y .graphify_labels.json;
+# lo demás es local de cada máquina
+graphify-out/cache/
+graphify-out/graph.html
+graphify-out/cost.json
+graphify-out/.graphify_python
+graphify-out/.graphify_root

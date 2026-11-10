@@ -1,0 +1,6 @@
+# Restos del proyecto anterior (fractales), no forman parte de la app
+backend/
+frontend/src/App.fractal.jsx
+
+# Configuración de Claude Code y sesiones paralelas
+.claude/

@@ -1,0 +1,104 @@
+{
+  "frontend/package.json": {
+    "mtime": 1792898972.6272852,
+    "seen": 1793072871.9338598,
+    "ast_hash": "44497c4702a13da2d13476b16ff6cfa1",
+    "semantic_hash": "44497c4702a13da2d13476b16ff6cfa1"
+  },
+  "frontend/src/App.jsx": {
+    "mtime": 1793071912.071339,
+    "seen": 1793072871.9338694,
+    "ast_hash": "6d8d392ad35a060e0567847d0144bf54",
+    "semantic_hash": "6d8d392ad35a060e0567847d0144bf54"
+  },
+  "frontend/src/Molecule.jsx": {
+    "mtime": 1792900395.380878,
+    "seen": 1793072871.9338744,
+    "ast_hash": "2db1a85deda6601767787b1beca8cffd",
+    "semantic_hash": "2db1a85deda6601767787b1beca8cffd"
+  },
+  "frontend/src/ReadingTab.jsx": {
+    "mtime": 1792900410.9113464,
+    "seen": 1793072871.9338775,
+    "ast_hash": "1de07e31d0b75d20bd5ca7a8a3089f2c",
+    "semantic_hash": "1de07e31d0b75d20bd5ca7a8a3089f2c"
+  },
+  "frontend/src/TotemCurve.jsx": {
+    "mtime": 1792899666.540749,
+    "seen": 1793072871.9338803,
+    "ast_hash": "a0f764ec5a366dad224b6957bb186559",
+    "semantic_hash": "a0f764ec5a366dad224b6957bb186559"
+  },
+  "frontend/src/checklistData.js": {
+    "mtime": 1792897458.5393558,
+    "seen": 1793072871.9338827,
+    "ast_hash": "24d0f6814f1c3f9594429b7e7b720037",
+    "semantic_hash": "24d0f6814f1c3f9594429b7e7b720037"
+  },
+  "frontend/src/main.jsx": {
+    "mtime": 1792866485.7664144,
+    "seen": 1793072871.933885,
+    "ast_hash": "755bc1125893967ca3fe0f17739a0a6b",
+    "semantic_hash": "755bc1125893967ca3fe0f17739a0a6b"
+  },
+  "frontend/src/readingData.js": {
+    "mtime": 1792899681.0133462,
+    "seen": 1793072871.9338872,
+    "ast_hash": "3410bd78ab950543d858e0d6429a8e82",
+    "semantic_hash": "3410bd78ab950543d858e0d6429a8e82"
+  },
+  "frontend/src/typeCode.js": {
+    "mtime": 1792903650.698472,
+    "seen": 1793072871.9338899,
+    "ast_hash": "25c3fd6821c2d04350bbb3a730d612ab",
+    "semantic_hash": "25c3fd6821c2d04350bbb3a730d612ab"
+  },
+  "frontend/src/typeCode.test.js": {
+    "mtime": 1793071928.5553691,
+    "seen": 1793072871.9338918,
+    "ast_hash": "85bc13c7d13e92e63d916ff2f18b8469",
+    "semantic_hash": "85bc13c7d13e92e63d916ff2f18b8469"
+  },
+  "frontend/src/typeGrid.js": {
+    "mtime": 1793071912.07107,
+    "seen": 1793072871.933894,
+    "ast_hash": "ec275371717ee9982741dc20b984d081",
+    "semantic_hash": "ec275371717ee9982741dc20b984d081"
+  },
+  "frontend/vite.config.js": {
+    "mtime": 1792866485.7664144,
+    "seen": 1793072871.9338965,
+    "ast_hash": "c0c30da63796e9edada2c9be7d5cf409",
+    "semantic_hash": "c0c30da63796e9edada2c9be7d5cf409"
+  },
+  "CLAUDE.md": {
+    "mtime": 1792915687.5609596,
+    "seen": 1793072871.9338984,
+    "ast_hash": "67d88e9d0760c3ba54c75dfd9551c1c5",
+    "semantic_hash": "67d88e9d0760c3ba54c75dfd9551c1c5"
+  },
+  "README.md": {
+    "mtime": 1793071977.6137104,
+    "seen": 1793072871.9339008,
+    "ast_hash": "85d80944fa2737a84e5c2db3ae944246",
+    "semantic_hash": "85d80944fa2737a84e5c2db3ae944246"
+  },
+  "como-se-lee.md": {
+    "mtime": 1792904385.313115,
+    "seen": 1793072871.9339032,
+    "ast_hash": "2a182eda1c4d3ab81fb59fdc28860b67",
+    "semantic_hash": "2a182eda1c4d3ab81fb59fdc28860b67"
+  },
+  "contexto.md": {
+    "mtime": 1793071977.6135712,
+    "seen": 1793072871.9339054,
+    "ast_hash": "5e04591596ffd3102e2ada49d73c62c9",
+    "semantic_hash": "5e04591596ffd3102e2ada49d73c62c9"
+  },
+  "frontend/index.html": {
+    "mtime": 1792866485.7658622,
+    "seen": 1793072871.9339075,
+    "ast_hash": "9b216e38658f517f9f6e89fa47a4bbb3",
+    "semantic_hash": "9b216e38658f517f9f6e89fa47a4bbb3"
+  }
+}
