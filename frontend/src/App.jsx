@@ -15,6 +15,7 @@ import { CHECKLIST_SECTIONS, checklistItemChecked, findChecklistItem } from "./c
 import { editBinary, readPaste, selectionsToBinary } from "./typeCode";
 import TotemCurve from "./TotemCurve";
 import ReadingTab from "./ReadingTab";
+import CodeText from "./CodeText";
 
 const NAV_TABS = ["Checklist", "Traits", "Interpretation", "Reading", "Emoji"];
 
@@ -116,10 +117,16 @@ export default function App() {
   }
 
   // Clicking a legend chip marks its two coins; clicking it again while
-  // they're marked clears them, like the toggles themselves.
+  // they're marked clears them, like the toggles themselves. Clicking a
+  // different chip while one is active starts over: every coin is cleared
+  // (the F/M modalities are kept) and only the new chip's two are marked.
   function handleLegendClick(item) {
-    const active = legendActive(item);
-    setSelections((prev) => prev.map((v, i) => (i in item.coins ? (active ? null : item.coins[i]) : v)));
+    if (legendActive(item)) {
+      setSelections((prev) => prev.map((v, i) => (i in item.coins ? null : v)));
+      return;
+    }
+    const replacing = GRID_LEGEND.some(legendActive);
+    setSelections((prev) => prev.map((v, i) => (i in item.coins ? item.coins[i] : replacing ? null : v)));
   }
 
   function setExtraSelection(index, side) {
@@ -176,8 +183,10 @@ export default function App() {
   const resolvedHeader = survivorCount === 1 ? GRID_HEADERS[survivor.col] : null;
   const totem = resolvedHeader ? TOTEMS[resolvedHeader] : null;
   const saviorFunctions = survivorCount === 1 ? survivor.cell.text.split("/") : null;
-  const mbti =
-    survivorCount === 1 ? mbtiTypeFromCell(survivor.cell) : null;
+  // The MBTI only depends on the Savior pair, so it shows as soon as every
+  // surviving candidate shares the same pair, even with animals undecided.
+  const survivorPairs = new Set(survivors.map(({ cell }) => cell.text));
+  const mbti = survivorPairs.size === 1 ? mbtiTypeFromCell(survivor.cell) : null;
 
   const typeCode =
     survivorCount === 0
@@ -405,7 +414,7 @@ export default function App() {
 
       <div className="result">
         <div className="result-row">
-          <div className="result-code">{fullCode}</div>
+          <div className="result-code"><CodeText code={fullCode} /></div>
           <button
             type="button"
             className="copy-btn"
@@ -417,13 +426,24 @@ export default function App() {
           </button>
         </div>
         <div className="result-row">
-          <input
-            className="result-binary"
-            type="text"
-            inputMode="numeric"
-            value={binary}
-            onChange={handleBinaryChange}
-          />
+          {/* An input can't color single characters, so its own text is
+              transparent and a mirror on top draws it with the X dimmed. */}
+          <div className="binary-field">
+            <input
+              className="result-binary"
+              type="text"
+              inputMode="numeric"
+              value={binary}
+              onChange={handleBinaryChange}
+            />
+            <div className="binary-mirror" aria-hidden="true">
+              {binary.split("").map((ch, i) => (
+                <span key={i} className={ch === "X" ? "code-x" : undefined}>
+                  {ch}
+                </span>
+              ))}
+            </div>
+          </div>
           <button
             type="button"
             className="copy-btn"

@@ -15,7 +15,7 @@
 import { GRID_HEADERS, GRID_ROWS, mbtiTypeFromCell, parsePastedCode } from "./typeGrid.js";
 
 export const SHORT_CODE =
-  /^(?:(?<mbti>[IE][NS][FT][JP])\s+)?(?<m1>[FM])(?<m2>[FM])-(?<sav1>[NSFT][ie])\/(?<sav2>[NSFT][ie])-(?<a1>[SPCB])(?<a2>[SPCB])\/(?<a3>[SPCB])\((?<a4>[SPCB])\)(?:\s*#(?<social>[1-4]))?$/;
+  /^(?:(?<mbti>[IE][NS][FT][JP]\*?)\s+)?(?<m1>[FM])(?<m2>[FM])-(?<sav1>[NSFT][ie])\/(?<sav2>[NSFT][ie])-(?<a1>[SPCB])(?<a2>[SPCB])\/(?<a3>[SPCB])\((?<a4>[SPCB])\)(?:\s*#(?<social>[1-4]))?$/;
 
 export const LONG_CODE =
   /^(?<od>O|D)\/(?<d>Di|De)\/(?<o>Oi|Oe)\/(?<ns>N|S)\/(?<ft>F|T)\/(?<sp>S|P)\/(?<cb>C|B)\/(?<ie4>INFO|ENERGY)\/(?<ie>I|E)\/(?<ms>[MF]-S)\/(?<mde>[MF]-De)$/;
@@ -199,7 +199,7 @@ export function validate(value) {
   if (mbti) {
     const expected = mbtiTypeFromCell(cell);
     if (mbti !== expected) {
-      errors.push(`El MBTI de ${pair} es ${expected}, no ${mbti} (la I/E sale de la primera función).`);
+      errors.push(`El MBTI de ${pair} es ${expected}, no ${mbti} (sale del stack de funciones; * = jumper).`);
     }
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GRID_HEADERS, GRID_LEGEND, GRID_ROWS, formatHeaderCode, mbtiTypeFromCell, selectionsFromCell } from "./typeGrid.js";
+import { GRID_HEADERS, GRID_LEGEND, GRID_ROWS, formatHeaderCode, isJumper, mbtiTypeFromCell, selectionsFromCell } from "./typeGrid.js";
 import {
   animalOf,
   editBinary,
@@ -262,5 +262,46 @@ describe("leyenda de la grilla", () => {
         }
       });
     }
+  });
+});
+
+describe("MBTI por stack de funciones", () => {
+  // Each type: [dominant + auxiliary, dominant + tertiary (jumper)].
+  const PAIRS_BY_TYPE = {
+    INFJ: ["Ni/Fe", "Ni/Ti"], INTJ: ["Ni/Te", "Ni/Fi"],
+    ISFJ: ["Si/Fe", "Si/Ti"], ISTJ: ["Si/Te", "Si/Fi"],
+    ENFP: ["Ne/Fi", "Ne/Te"], ENTP: ["Ne/Ti", "Ne/Fe"],
+    ESFP: ["Se/Fi", "Se/Te"], ESTP: ["Se/Ti", "Se/Fe"],
+    INFP: ["Fi/Ne", "Fi/Si"], ISFP: ["Fi/Se", "Fi/Ni"],
+    INTP: ["Ti/Ne", "Ti/Si"], ISTP: ["Ti/Se", "Ti/Ni"],
+    ENFJ: ["Fe/Ni", "Fe/Se"], ESFJ: ["Fe/Si", "Fe/Ne"],
+    ENTJ: ["Te/Ni", "Te/Se"], ESTJ: ["Te/Si", "Te/Ne"],
+  };
+  const EXPECTED = Object.fromEntries(
+    Object.entries(PAIRS_BY_TYPE).flatMap(([type, [aux, jumper]]) => [
+      [aux, type],
+      [jumper, `${type}*`],
+    ])
+  );
+
+  it("cubre los 32 pares", () => {
+    expect(Object.keys(EXPECTED)).toHaveLength(32);
+  });
+
+  it("cada celda da el MBTI de su par, con * si es jumper", () => {
+    for (const row of GRID_ROWS) {
+      for (const cell of row) {
+        expect(mbtiTypeFromCell(cell), cell.text).toBe(EXPECTED[cell.text]);
+        expect(isJumper(cell), cell.text).toBe(EXPECTED[cell.text].endsWith("*"));
+      }
+    }
+  });
+
+  it("validate exige el asterisco solo en los jumpers", () => {
+    const jumper = ALL_CODES.find(({ cell }) => cell.text === "Ni/Ti").code;
+    expect(validate(parseOk(`INFJ* ${jumper}`))).toEqual([]);
+    expect(validate(parseOk(`INFJ ${jumper}`)).join(" ")).toContain("es INFJ*, no INFJ");
+    expect(validate(parseOk(`INTJ ${jumper}`)).join(" ")).toContain("es INFJ*, no INTJ");
+    expect(validate(parseOk(`INFJ* ${BASE_SHORT}`)).join(" ")).toContain("es INFJ, no INFJ*");
   });
 });

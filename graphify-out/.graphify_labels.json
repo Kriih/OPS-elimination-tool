@@ -1,1 +1,7 @@
-{"0": "OPS Rules and Notation", "1": "App State and Handlers", "2": "Build and Deploy Setup", "3": "Type Code Parser and Molecule", "4": "Reading Tab Rendering", "5": "Reading Tab Design Spec", "6": "Card Content and Sources", "7": "Agent Instructions"}
+{
+  "1": "App State and Handlers",
+  "2": "Build and Deploy Setup",
+  "3": "Type Code Parser and Molecule",
+  "4": "Reading Tab Rendering",
+  "7": "Agent Instructions"
+}

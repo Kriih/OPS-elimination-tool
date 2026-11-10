@@ -221,23 +221,61 @@ dentro de un sandbox sin Node (había que usar `/app/bin/host-spawn`).
     renombraron.
 - **Código de tipo** (ej. `MF-Ni/Te-BS/P(C)`): `[modalidad FM]-[par de
   funciones]-[header de columna con la 4ta letra entre paréntesis]`.
-- **Código MBTI** (ej. `INTJ`, se antepone al código de tipo): N/S y F/T
-  salen directo de las 2 funciones del par. **I/E sale de la orientación
-  de la primera función** (la 1ª Savior): Ni/Te → `I`, Ne/Ti → `E`
-  (corregido por el usuario el 2026-10-25; antes se usaba el último
-  animal, y eso daba `ENTJ` para Ni/Te). Ojo: **no es lo mismo que la
-  moneda 9** (I/E de OPS, que sí depende del último animal), así que un
-  tipo puede ser `INFJ` y extravertido en OPS a la vez (ej.
-  `Ni/Fe-BP/C(S)`). **J/P sale del eje primario de la celda**: Oi→J,
-  Oe→P, Di→P, De→J — es la misma regla que usa la leyenda de la grilla
-  original (`ExxP`/`IxxJ`/`ExxJ`/`IxxP`), y es la única que funciona
-  también para Sleep/Play.
+- **Código MBTI** (ej. `INTJ`, se antepone al código de tipo): **sale del
+  stack de funciones** (regla del usuario, 2026-11-10). Cada tipo MBTI se
+  reconoce por su función dominante más la auxiliar **o** la terciaria:
+  INFJ (Ni Fe Ti Se) = `Ni/Fe` o `Ni/Ti`. La 1ª Savior es la dominante; la
+  2ª es la auxiliar si tiene la actitud opuesta, o la terciaria si tiene la
+  misma.
+  - **Jumper**: par con las dos funciones en la misma actitud (Ni/Ti,
+    Fe/Se…), es decir, la 2ª Savior "salta" la auxiliar y es la terciaria.
+    Se marca con asterisco: `Ni/Ti` → `INFJ*`. En OPS son los pares cuyo
+    1er animal es Sleep o Play.
+  - Letras (con dominante + auxiliar; para un jumper la auxiliar es la
+    terciaria con letra y actitud invertidas, Ti → Fe): I/E = actitud de la
+    dominante; N/S y F/T = las dos letras; J/P = la función extravertida de
+    las dos (T/F → J, N/S → P). Ese J/P siempre coincide con el eje
+    primario de la celda (Oi→J, Oe→P, Di→P, De→J), o sea con la leyenda
+    `ExxP`/`IxxJ`/`ExxJ`/`IxxP`.
+  - Tabla completa (auxiliar / jumper):
+
+    | MBTI | Stack | Pares |
+    |---|---|---|
+    | INFJ | Ni Fe Ti Se | Ni/Fe, Ni/Ti* |
+    | INTJ | Ni Te Fi Se | Ni/Te, Ni/Fi* |
+    | ISFJ | Si Fe Ti Ne | Si/Fe, Si/Ti* |
+    | ISTJ | Si Te Fi Ne | Si/Te, Si/Fi* |
+    | ENFP | Ne Fi Te Si | Ne/Fi, Ne/Te* |
+    | ENTP | Ne Ti Fe Si | Ne/Ti, Ne/Fe* |
+    | ESFP | Se Fi Te Ni | Se/Fi, Se/Te* |
+    | ESTP | Se Ti Fe Ni | Se/Ti, Se/Fe* |
+    | INFP | Fi Ne Si Te | Fi/Ne, Fi/Si* |
+    | ISFP | Fi Se Ni Te | Fi/Se, Fi/Ni* |
+    | INTP | Ti Ne Si Fe | Ti/Ne, Ti/Si* |
+    | ISTP | Ti Se Ni Fe | Ti/Se, Ti/Ni* |
+    | ENFJ | Fe Ni Se Ti | Fe/Ni, Fe/Se* |
+    | ESFJ | Fe Si Ne Ti | Fe/Si, Fe/Ne* |
+    | ENTJ | Te Ni Se Fi | Te/Ni, Te/Se* |
+    | ESTJ | Te Si Ne Fi | Te/Si, Te/Ne* |
+
+  - Antes (hasta 2026-11-10) N/S y F/T salían directo de las letras del
+    par, así que los jumpers daban el tipo con una letra cambiada (Ni/Ti
+    salía `INTJ`); no volver a esa regla. El validador exige el `*`
+    exacto: `INFJ Ni/Ti…` y `INFJ* Ni/Fe…` se rechazan.
+  - Se muestra en cuanto todos los candidatos que quedan comparten el
+    mismo par Savior (ej. marcando solo O, De, Oi, N y F ya sale `INFJ
+    xx-Ni/Fe-Bx/x(x)`), sin esperar a que se resuelvan los animales.
+  - Ojo: **no es lo mismo que la moneda 9** (I/E de OPS, que depende del
+    último animal), así que un tipo puede ser `INFJ` y extravertido en OPS
+    a la vez (ej. `Ni/Fe-BP/C(S)`).
 - **Leyenda de la grilla** (`GRID_LEGEND`: ExxP, IxxJ, ExxJ, IxxP): cada
   grupo es el tipo y la orientación de la **1ª Savior**, así que lo fijan
   dos monedas: ExxP = O + Oe, IxxJ = O + Oi, ExxJ = D + De, IxxP = D + Di
   (campo `coins`). Los chips son botones: al hacer clic marcan esas dos
   monedas (y las desmarcan si ya estaban), y se iluminan cuando las dos
-  están marcadas. Un test confirma que cada grupo coincide con sus 32
+  están marcadas. Si otro chip estaba activo, se empieza de cero: se
+  desmarcan todas las monedas (las modalidades F/M se mantienen) y solo
+  quedan las dos del chip nuevo. Un test confirma que cada grupo coincide con sus 32
   celdas y con la I/E y J/P del MBTI.
 - **Ambiguo / sin coincidencia**: si no queda ninguna celda sin
   desvanecer, el código muestra `(sin coincidencia)`. Si queda más de

@@ -179,30 +179,45 @@ export function formatHeaderCode(header) {
   return `${header.slice(0, -1)}(${header.slice(-1)})`;
 }
 
-// Derives the 4-letter MBTI-style code from a grid cell.
+const OPPOSITE_FN_LETTER = { N: "S", S: "N", F: "T", T: "F" };
+
+// A "jumper" is a Savior pair whose two functions share the same attitude
+// (Ni/Ti, Fe/Se...): the 2nd Savior is the classic stack's TERTIARY
+// function, not the auxiliary, so it "jumps" over the auxiliary.
+export function isJumper(cell) {
+  const [a, b] = cell.text.split("/");
+  return a[1] === b[1];
+}
+
+// Derives the MBTI-style code from a grid cell, by function stack.
 //
-// I/E comes from the attitude of the FIRST function of the pair (the 1st
-// Savior): Ni/Te -> I, Ne/Ti -> E. This is the MBTI letter only - it is
-// independent of OPS's own Introvert/Extrovert coin (row 9), which depends
-// on the last animal (isIntrovertHeader), so e.g. Ni/Fe BP/C(S) is INFJ
-// while still being an OPS Extrovert.
+// Each MBTI type is recognized by its dominant function plus either its
+// auxiliary or its tertiary: INFJ (Ni Fe Ti Se) = Ni/Fe or Ni/Ti. So the
+// 1st Savior is the dominant, and the 2nd is the auxiliary when the
+// attitudes differ, or the tertiary when they match (a jumper). For a
+// jumper the auxiliary is recovered by flipping the tertiary's letter and
+// attitude (Ti -> Fe), and the code gets a "*" (Ni/Ti -> INFJ*).
 //
-// N/S and T/F just come from the two function letters. J/P comes from the
-// cell's PRIMARY axis (the one that decides Decider-vs-Observer): Oi->J,
-// Oe->P, Di->P, De->J - this is exactly the ExxP/IxxJ/ExxJ/IxxP rule from
-// the source site's own grid legend, and it's the only rule that also
-// works for the "same-attitude" Sleep/Play pairs (where classic MBTI's
-// "extraverted function decides J/P" shortcut has no extraverted function
-// to point at).
+// With dominant + auxiliary in hand the letters are classic MBTI: I/E from
+// the dominant's attitude, N/S and F/T from the two letters, J/P from the
+// extraverted one of the two (judging T/F -> J, perceiving N/S -> P). That
+// J/P always matches the cell's primary axis (Oi->J, Oe->P, Di->P, De->J),
+// the ExxP/IxxJ/ExxJ/IxxP grid legend.
+//
+// This is the MBTI letter only - it is independent of OPS's own
+// Introvert/Extrovert coin (row 9), which depends on the last animal
+// (isIntrovertHeader), so e.g. Ni/Fe BP/C(S) is INFJ while still being an
+// OPS Extrovert.
 export function mbtiTypeFromCell(cell) {
-  const { classes, text } = cell;
-  const isDecider = classes.includes("decider");
-  const jp = isDecider ? (classes.includes("di") ? "P" : "J") : classes.includes("oi") ? "J" : "P";
-  const [a, b] = text.split("/");
-  const ie = a[1] === "i" ? "I" : "E";
-  const ns = [a, b].find((f) => f[0] === "N" || f[0] === "S")[0];
-  const ft = [a, b].find((f) => f[0] === "F" || f[0] === "T")[0];
-  return `${ie}${ns}${ft}${jp}`;
+  const [dom, second] = cell.text.split("/");
+  const jumper = isJumper(cell);
+  const aux = jumper ? OPPOSITE_FN_LETTER[second[0]] + (second[1] === "i" ? "e" : "i") : second;
+  const ie = dom[1] === "i" ? "I" : "E";
+  const ns = [dom, aux].find((f) => f[0] === "N" || f[0] === "S")[0];
+  const ft = [dom, aux].find((f) => f[0] === "F" || f[0] === "T")[0];
+  const extraverted = dom[1] === "e" ? dom : aux;
+  const jp = extraverted[0] === "F" || extraverted[0] === "T" ? "J" : "P";
+  return `${ie}${ns}${ft}${jp}${jumper ? "*" : ""}`;
 }
 
 // Given one grid cell (and the header of the column it's in), derive the

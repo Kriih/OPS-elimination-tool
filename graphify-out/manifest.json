@@ -6,10 +6,10 @@
     "semantic_hash": "44497c4702a13da2d13476b16ff6cfa1"
   },
   "frontend/src/App.jsx": {
-    "mtime": 1793071912.071339,
-    "seen": 1793072871.9338694,
-    "ast_hash": "6d8d392ad35a060e0567847d0144bf54",
-    "semantic_hash": "6d8d392ad35a060e0567847d0144bf54"
+    "mtime": 1794335484.4924195,
+    "seen": 1794335485.08117,
+    "ast_hash": "55de1044e93b5170136bbc801a666033",
+    "semantic_hash": ""
   },
   "frontend/src/Molecule.jsx": {
     "mtime": 1792900395.380878,
@@ -18,10 +18,10 @@
     "semantic_hash": "2db1a85deda6601767787b1beca8cffd"
   },
   "frontend/src/ReadingTab.jsx": {
-    "mtime": 1792900410.9113464,
-    "seen": 1793072871.9338775,
-    "ast_hash": "1de07e31d0b75d20bd5ca7a8a3089f2c",
-    "semantic_hash": "1de07e31d0b75d20bd5ca7a8a3089f2c"
+    "mtime": 1794334804.108662,
+    "seen": 1794334825.464,
+    "ast_hash": "38e6a1a6c237a02640ecda2d3405fce2",
+    "semantic_hash": ""
   },
   "frontend/src/TotemCurve.jsx": {
     "mtime": 1792899666.540749,
@@ -48,22 +48,22 @@
     "semantic_hash": "3410bd78ab950543d858e0d6429a8e82"
   },
   "frontend/src/typeCode.js": {
-    "mtime": 1792903650.698472,
-    "seen": 1793072871.9338899,
-    "ast_hash": "25c3fd6821c2d04350bbb3a730d612ab",
-    "semantic_hash": "25c3fd6821c2d04350bbb3a730d612ab"
+    "mtime": 1794335115.0865998,
+    "seen": 1794335132.8393044,
+    "ast_hash": "831e7e93a756493814ee7d04c2547805",
+    "semantic_hash": ""
   },
   "frontend/src/typeCode.test.js": {
-    "mtime": 1793071928.5553691,
-    "seen": 1793072871.9338918,
-    "ast_hash": "85bc13c7d13e92e63d916ff2f18b8469",
-    "semantic_hash": "85bc13c7d13e92e63d916ff2f18b8469"
+    "mtime": 1794335115.0867572,
+    "seen": 1794335132.8393068,
+    "ast_hash": "a51c2b85abdcb1d5fb3f9b96492ca78f",
+    "semantic_hash": ""
   },
   "frontend/src/typeGrid.js": {
-    "mtime": 1793071912.07107,
-    "seen": 1793072871.933894,
-    "ast_hash": "ec275371717ee9982741dc20b984d081",
-    "semantic_hash": "ec275371717ee9982741dc20b984d081"
+    "mtime": 1794335115.0863495,
+    "seen": 1794335132.839309,
+    "ast_hash": "e6e3c90938d83fa4ece672c5455b248f",
+    "semantic_hash": ""
   },
   "frontend/vite.config.js": {
     "mtime": 1792866485.7664144,
@@ -78,27 +78,33 @@
     "semantic_hash": "67d88e9d0760c3ba54c75dfd9551c1c5"
   },
   "README.md": {
-    "mtime": 1793071977.6137104,
-    "seen": 1793072871.9339008,
-    "ast_hash": "85d80944fa2737a84e5c2db3ae944246",
-    "semantic_hash": "85d80944fa2737a84e5c2db3ae944246"
+    "mtime": 1794335484.5050273,
+    "seen": 1794335485.081199,
+    "ast_hash": "86caa1d0d99f775ac60b1f7b6c13d581",
+    "semantic_hash": ""
   },
   "como-se-lee.md": {
-    "mtime": 1792904385.313115,
-    "seen": 1793072871.9339032,
-    "ast_hash": "2a182eda1c4d3ab81fb59fdc28860b67",
-    "semantic_hash": "2a182eda1c4d3ab81fb59fdc28860b67"
+    "mtime": 1794335139.9190102,
+    "seen": 1794335254.9375453,
+    "ast_hash": "c655b0fe069b2fbdecf447e1f1a2db03",
+    "semantic_hash": ""
   },
   "contexto.md": {
-    "mtime": 1793071977.6135712,
-    "seen": 1793072871.9339054,
-    "ast_hash": "5e04591596ffd3102e2ada49d73c62c9",
-    "semantic_hash": "5e04591596ffd3102e2ada49d73c62c9"
+    "mtime": 1794335484.5048041,
+    "seen": 1794335485.081202,
+    "ast_hash": "cea3566405042ddfccb9f5e65f8e2861",
+    "semantic_hash": ""
   },
   "frontend/index.html": {
     "mtime": 1792866485.7658622,
     "seen": 1793072871.9339075,
     "ast_hash": "9b216e38658f517f9f6e89fa47a4bbb3",
     "semantic_hash": "9b216e38658f517f9f6e89fa47a4bbb3"
+  },
+  "frontend/src/CodeText.jsx": {
+    "mtime": 1794334804.0929909,
+    "seen": 1794334825.4639947,
+    "ast_hash": "d875d69bf9ded7a63618b171811ff69e",
+    "semantic_hash": ""
   }
 }

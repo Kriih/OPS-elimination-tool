@@ -114,7 +114,7 @@ Las dos regex son **estrictas**: aceptan solo un código completo y bien escrito
 - `validate(parsed)` aplica las reglas de la sección 3. Las regex **aceptan tipos imposibles** (dos Observer como `Ni/Se`, animales repetidos como `BB/B(B)`, o `Fi/Ni` con `BP`) y eso es intencional: si la regex los rechazara, solo diría "no coincide". `validate` da el motivo:
   - Primero, chequeos con mensaje específico: una Savior Observer y una Decider; los cuatro animales, sin repetir; el 1º animal es el que forman las dos Savior.
   - Después, el chequeo de fondo: que `sav1/sav2` exista en `GRID_ROWS` en la columna `a1a2/a3a4`. Eso solo ya cubre todos los imposibles.
-  - Si vino el prefijo MBTI, que coincida con `mbtiTypeFromCell` (la I/E del MBTI sale de la **primera función**, no del último animal; ver `contexto.md`).
+  - Si vino el prefijo MBTI, que coincida con `mbtiTypeFromCell` (el MBTI sale del **stack de funciones** y los jumpers llevan `*`, ej. `INFJ*` para Ni/Ti; ver `contexto.md`).
 - **Caja de pegar:** primero prueba `parse`. Si la regex estricta no coincide, sigue con la lógica tolerante de `parsePastedCode` como hoy, para no perder lo que ya acepta (códigos parciales, `_`, MBTI suelto, headers sin paréntesis). `parsePastedCode` **no** se reemplaza.
 - Tests: la app no tiene framework de tests. Propuesta: sumar Vitest (combina con Vite). Casos mínimos: el **caso base** `MF-Ni/Fe-BP/C(S)` (con y sin `INFJ` adelante) tiene que dar exactamente la forma larga del ejemplo de la sección 1 y el binario `10010001101`; las 128 celdas × 4 modalidades tienen que pasar `validate`, y una lista de códigos inválidos tiene que fallar con el mensaje esperado.
 

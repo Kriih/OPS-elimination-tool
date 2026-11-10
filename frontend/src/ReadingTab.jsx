@@ -2,6 +2,7 @@ import { GRID_HEADERS, TOTEMS, selectionsFromCell } from "./typeGrid";
 import { COIN_READINGS, MAIN_COIN_COUNT, PENDING } from "./readingData";
 import TotemCurve, { totemScoreX } from "./TotemCurve";
 import Molecule from "./Molecule";
+import CodeText from "./CodeText";
 
 // Reading tab ("Cómo se lee", see como-se-lee.md): one card per coin in
 // Elimination Tool order. Each coin is in one of four states:
@@ -186,8 +187,8 @@ export default function ReadingTab({ selections, extraSelections, survivors, ful
   return (
     <div className="tab-panel reading">
       <div className="reading-header">
-        <div className="reading-code">{fullCode}</div>
-        <div className="reading-long">{longCode}</div>
+        <div className="reading-code"><CodeText code={fullCode} /></div>
+        <div className="reading-long"><CodeText code={longCode} /></div>
         <div className="reading-summary">{summary}</div>
       </div>
 
